@@ -1,8 +1,4 @@
 [discord]: hhttps://discord.gg/wF9JHH55Kp
-[discord-img]: https://discordapp.com/api/guilds/1087072997736714310/widget.png
-[discord-banner]: https://discordapp.com/api/guilds/1087072997736714310/widget.png?style=banner2
-
-[![discord-img][] ][discord]
 
 
 # LanoValoPy (Lanore Valorant Python)
@@ -83,5 +79,3 @@ The detailed documentations are still in progress.
 ## Support
 
 For support visit my [discord] server
-
-[ ![discord-banner][] ][discord]
