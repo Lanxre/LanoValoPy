@@ -1,4 +1,4 @@
-[discord]: hhttps://discord.gg/wF9JHH55Kp
+[discord]: https://discord.gg/wF9JHH55Kp
 
 
 # LanoValoPy (Lanore Valorant Python)
