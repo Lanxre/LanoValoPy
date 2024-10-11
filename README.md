@@ -26,17 +26,7 @@ You can request an API key on [Henrik's discord server](https://discord.com/invi
 
 Some requests may take longer.
 
-### Set up the project
-
-```java
-public static void main(String[] args) throws IOException {
-    // Initialize the main instance (API key is NOT required)
-    ValorantAPI valorantAPI = new ValorantAPI("API_KEY");
-}
-```
-If you dont want to use an API key, leave the constructor of `ValorantAPI` empty
-
-### Get player informations
+### Get Account and mmr informations
 
 ```python
 import asyncio
