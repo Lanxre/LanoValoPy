@@ -1,15 +1,33 @@
 import aiohttp
-from pydantic import BaseModel
-from typing import Optional, Dict, Any
-from .valo_types import Regions, Maps, MMRVersions, LeaderboardVersions, Episodes
+from typing import List, Optional, Dict, Any
+from urllib.parse import urlencode, quote
 
-
-class APIResponse(BaseModel):
-    status: int
-    data: Optional[Dict] = None
-    ratelimits: Optional[Dict] = None
-    error: Optional[Dict] = None
-    url: Optional[str] = None
+from lano_valo_py.valo_types import (
+    APIResponseModel,
+    RateLimit,
+    ErrorObject,
+    FetchOptionsModel,
+)
+from lano_valo_py.valo_types.valo_models import (
+    AccountFetchByPUUIDOptionsModel,
+    AccountFetchOptionsModel,
+    GetContentFetchOptionsModel,
+    GetCrosshairFetchOptionsModel,
+    GetFeaturedItemsFetchOptionsModel,
+    GetLeaderboardOptionsModel,
+    GetLifetimeMMRHistoryFetchOptionsModel,
+    GetMMRByPUUIDFetchOptionsModel,
+    GetMMRFetchOptionsModel,
+    GetMMRHistoryByPUUIDFetchOptionsModel,
+    GetMMRHistoryFetchOptionsModel,
+    GetMatchFetchOptionsModel,
+    GetMatchesByPUUIDFetchOptionsModel,
+    GetMatchesFetchOptionsModel,
+    GetRawFetchOptionsModel,
+    GetStatusFetchOptionsModel,
+    GetVersionFetchOptionsModel,
+    GetWebsiteFetchOptionsModel,
+)
 
 
 class LanoValoPy:
@@ -17,233 +35,304 @@ class LanoValoPy:
 
     def __init__(self, token: Optional[str] = None):
         self.token = token
+        self.headers = {"User-Agent": "unofficial-valorant-api/python/1.0"}
+        if self.token:
+            self.headers["Authorization"] = self.token
 
-    async def _fetch(
-        self,
-        url: str,
-        method: str = "GET",
-        body: Optional[Dict] = None,
-        rtype: str = "json",
-    ) -> APIResponse:
-        headers = {
-            "User-Agent": "unofficial-valorant-api/python",
-            "Authorization": self.token if self.token else "",
-        }
+    async def _parse_body(self, body: Any) -> Any:
+        if "errors" in body:
+            return body["errors"]
+        return body["data"] if body.get("status") else body
 
-        async with aiohttp.ClientSession() as session:
-            async with session.request(
-                method, url, json=body, headers=headers
-            ) as response:
-                try:
-                    data = (
-                        await response.json()
-                        if rtype == "json"
-                        else await response.read()
-                    )
-                    ratelimits = {
-                        "used": response.headers.get("x-ratelimit-limit", 0),
-                        "remaining": response.headers.get("x-ratelimit-remaining", 0),
-                        "reset": response.headers.get("x-ratelimit-reset", 0),
-                    }
-                    return APIResponse(
-                        status=response.status,
-                        data=data,
-                        ratelimits=ratelimits,
-                        url=url,
-                        error=None if response.ok else data,
-                    )
-                except Exception as e:
-                    return APIResponse(
-                        status=response.status,
-                        error={"message": str(e)},
-                        url=url,
-                    )
+    async def _parse_response(
+        self, response: aiohttp.ClientResponse, url: str
+    ) -> APIResponseModel:
+        try:
+            data = await response.json()
+        except aiohttp.ContentTypeError:
+            data = await response.text()
 
-    def _validate(self, input_data: Dict[str, Any]):
-        for key, value in input_data.items():
-            if value is None:
-                raise ValueError(f"Missing parameter: {key}")
+        ratelimits = None
+        if "x-ratelimit-limit" in response.headers:
+            ratelimits = RateLimit(
+                used=int(response.headers.get("x-ratelimit-limit", 0)),
+                remaining=int(response.headers.get("x-ratelimit-remaining", 0)),
+                reset=int(response.headers.get("x-ratelimit-reset", 0)),
+            )
 
-    def _query(self, input_data: Dict[str, Any]) -> str:
-        return "&".join(
-            [f"{key}={value}" for key, value in input_data.items() if value is not None]
+        error = None
+        if not response.ok:
+            api_response = APIResponseModel(
+                status=response.status,
+                data=None,
+                ratelimits=ratelimits,
+                error=None,
+                url=url,
+            )
+            try:
+                error = ErrorObject(message=data.get("errors", "Unknown error")[0].get("message", "Unknown error"))
+                api_response.error = error
+                return api_response
+                 
+            except AttributeError:
+                error = ErrorObject(message=str(data))
+                api_response.error = error
+                return api_response
+        
+        api_response = APIResponseModel(
+            status=response.status,
+            data=None
+            if "application/json" not in response.headers.get("Content-Type", "")
+            else await self._parse_body(data),
+            ratelimits=ratelimits,
+            error=error,
+            url=url,
         )
+        return api_response
 
-    async def get_account(
-        self, name: str, tag: str, force: Optional[bool] = None
-    ) -> APIResponse:
-        self._validate({"name": name, "tag": tag})
-        query = self._query({"force": force})
-        url = f"{self.BASE_URL}/v1/account/{name}/{tag}{f'?{query}' if query else ''}"
-        return await self._fetch(url)
+    def _validate(self, input_data: Dict[str, Any], required_fields: List[str] = None):
+        required_fields = required_fields or []
+        
+        for key, value in input_data.items():
+            if key in required_fields and value is None:
+                raise ValueError(f"Missing required parameter: {key}")
+
+    def _query(self, input_data: Dict[str, Any]) -> Optional[str]:
+        query_params = {
+            k: ('true' if v is True else 'false' if v is False else v)
+            for k, v in input_data.items() if v is not None
+        }
+        return urlencode(query_params) if query_params else None
+
+    async def _fetch(self, fetch_options: FetchOptionsModel) -> APIResponseModel:
+        method = fetch_options.type.upper()
+        url = fetch_options.url
+        headers = self.headers.copy()
+
+        if fetch_options.type == "POST" and fetch_options.body:
+            json_data = fetch_options.body
+        else:
+            json_data = None
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.request(
+                    method,
+                    url,
+                    headers=headers,
+                    json=json_data,
+                    params=None if not fetch_options.rtype else fetch_options.rtype,
+                ) as response:
+                    return await self._parse_response(response, url)
+        except aiohttp.ClientError as e:
+            return APIResponseModel(
+                status=500,
+                data=None,
+                ratelimits=None,
+                error=ErrorObject(message=str(e)),
+                url=fetch_options.url,
+            )
+
+    async def get_account(self, options: AccountFetchOptionsModel) -> APIResponseModel:
+        self._validate(options.model_dump())
+        query = self._query({"force": options.force})
+        encoded_name = quote(options.name)
+        encoded_tag = quote(options.tag)
+        url = f"{self.BASE_URL}/v1/account/{encoded_name}/{encoded_tag}"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
     async def get_account_by_puuid(
-        self, puuid: str, force: Optional[bool] = None
-    ) -> APIResponse:
-        self._validate({"puuid": puuid})
-        query = self._query({"force": force})
-        url = (
-            f"{self.BASE_URL}/v1/by-puuid/account/{puuid}{f'?{query}' if query else ''}"
-        )
-        return await self._fetch(url)
-
-    async def get_mmr(
-        self,
-        version: MMRVersions,
-        region: Regions,
-        name: str,
-        tag: str,
-        filter: Optional[str] = None,
-    ) -> APIResponse:
-        self._validate({"version": version, "region": region, "name": name, "tag": tag})
-        query = self._query({"filter": filter})
-        url = f"{self.BASE_URL}/{version}/mmr/{region}/{name}/{tag}{f'?{query}' if query else ''}"
-        return await self._fetch(url)
+        self, options: AccountFetchByPUUIDOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        query = self._query({"force": options.force})
+        url = f"{self.BASE_URL}/v1/by-puuid/account/{options.puuid}"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
     async def get_mmr_by_puuid(
-        self,
-        version: MMRVersions,
-        region: Regions,
-        puuid: str,
-        filter: Optional[str] = None,
-    ) -> APIResponse:
-        self._validate({"version": version, "region": region, "puuid": puuid})
-        query = self._query({"filter": filter})
-        url = f"{self.BASE_URL}/{version}/by-puuid/mmr/{region}/{puuid}{f'?{query}' if query else ''}"
-        return await self._fetch(url)
+        self, options: GetMMRByPUUIDFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        query = self._query({"filter": options.filter})
+        url = f"{self.BASE_URL}/{options.version}/by-puuid/mmr/{options.region}/{options.puuid}"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
     async def get_mmr_history_by_puuid(
-        self, region: Regions, puuid: str
-    ) -> APIResponse:
-        self._validate({"region": region, "puuid": puuid})
-        url = f"{self.BASE_URL}/v1/by-puuid/mmr-history/{region}/{puuid}"
-        return await self._fetch(url)
+        self, options: GetMMRHistoryByPUUIDFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        url = (
+            f"{self.BASE_URL}/v1/by-puuid/mmr-history/{options.region}/{options.puuid}"
+        )
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
     async def get_matches_by_puuid(
-        self,
-        region: str,
-        puuid: str,
-        filter: Optional[str] = None,
-        map: Optional[Maps] = None,
-        size: Optional[int] = None,
-    ) -> APIResponse:
-        self._validate({"region": region, "puuid": puuid})
-        query = self._query({"filter": filter, "map": map, "size": size})
-        url = f"{self.BASE_URL}/v3/by-puuid/matches/{region}/{puuid}{f'?{query}' if query else ''}"
-        return await self._fetch(url)
+        self, options: GetMatchesByPUUIDFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        query = self._query(
+            {"filter": options.filter, "map": options.map, "size": options.size}
+        )
+        url = f"{self.BASE_URL}/v3/by-puuid/matches/{options.region}/{options.puuid}"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
-    async def get_content(self, locale: Optional[str] = None) -> APIResponse:
-        query = self._query({"locale": locale})
-        url = f"{self.BASE_URL}/v1/content{f'?{query}' if query else ''}"
-        return await self._fetch(url)
+    async def get_content(
+        self, options: GetContentFetchOptionsModel
+    ) -> APIResponseModel:
+        query = self._query({"locale": options.locale})
+        url = f"{self.BASE_URL}/v1/content"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
     async def get_leaderboard(
-        self,
-        version: LeaderboardVersions,
-        region: Regions,
-        start: Optional[int] = None,
-        end: Optional[int] = None,
-        name: Optional[str] = None,
-        tag: Optional[str] = None,
-        puuid: Optional[str] = None,
-        season: Optional[Episodes] = None,
-    ) -> APIResponse:
-        if name and tag and puuid:
+        self, options: GetLeaderboardOptionsModel
+    ) -> APIResponseModel:
+        if options.name and options.tag and options.puuid:
             raise ValueError(
                 "Too many parameters: You can't search for name/tag and puuid at the same time, please decide between name/tag and puuid"
             )
-        self._validate({"version": version, "region": region})
+        self._validate({"version": options.version, "region": options.region})
         query = self._query(
             {
-                "start": start,
-                "end": end,
-                "name": name,
-                "tag": tag,
-                "puuid": puuid,
-                "season": season,
+                "start": options.start,
+                "end": options.end,
+                "name": options.name,
+                "tag": options.tag,
+                "puuid": options.puuid,
+                "season": options.season,
             }
         )
-        url = f"{self.BASE_URL}/{version}/leaderboard/{region}{f'?{query}' if query else ''}"
-        return await self._fetch(url)
+        url = f"{self.BASE_URL}/{options.version}/leaderboard/{options.region}"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
     async def get_matches(
-        self,
-        region: str,
-        name: str,
-        tag: str,
-        filter: Optional[str] = None,
-        map: Optional[str] = None,
-        size: Optional[int] = None,
-    ) -> APIResponse:
-        self._validate({"region": region, "name": name, "tag": tag})
-        query = self._query({"filter": filter, "map": map, "size": size})
-        url = f"{self.BASE_URL}/v3/matches/{region}/{name}/{tag}{f'?{query}' if query else ''}"
-        return await self._fetch(url)
+        self, options: GetMatchesFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        query = self._query(
+            {"filter": options.filter, "map": options.map, "size": options.size}
+        )
+        encoded_name = quote(options.name)
+        encoded_tag = quote(options.tag)
+        url = (
+            f"{self.BASE_URL}/v3/matches/{options.region}/{encoded_name}/{encoded_tag}"
+        )
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
-    async def get_match(self, match_id: str) -> APIResponse:
-        self._validate({"match_id": match_id})
-        url = f"{self.BASE_URL}/v2/match/{match_id}"
-        return await self._fetch(url)
+    async def get_match(self, options: GetMatchFetchOptionsModel) -> APIResponseModel:
+        self._validate(options.model_dump())
+        url = f"{self.BASE_URL}/v2/match/{options.match_id}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
-    async def get_mmr_history(self, region: str, name: str, tag: str) -> APIResponse:
-        self._validate({"region": region, "name": name, "tag": tag})
-        url = f"{self.BASE_URL}/v1/mmr-history/{region}/{name}/{tag}"
-        return await self._fetch(url)
+    async def get_mmr_history(
+        self, options: GetMMRHistoryFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        encoded_name = quote(options.name)
+        encoded_tag = quote(options.tag)
+        url = f"{self.BASE_URL}/v1/mmr-history/{options.region}/{encoded_name}/{encoded_tag}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
     async def get_lifetime_mmr_history(
-        self,
-        region: str,
-        name: str,
-        tag: str,
-        page: Optional[int] = None,
-        size: Optional[int] = None,
-    ) -> APIResponse:
-        self._validate({"region": region, "name": name, "tag": tag})
-        query = self._query({"page": page, "size": size})
-        url = f"{self.BASE_URL}/v1/lifetime/mmr-history/{region}/{name}/{tag}{f'?{query}' if query else ''}"
-        return await self._fetch(url)
+        self, options: GetLifetimeMMRHistoryFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        query = self._query({"page": options.page, "size": options.size})
+        encoded_name = quote(options.name)
+        encoded_tag = quote(options.tag)
+        url = f"{self.BASE_URL}/v1/lifetime/mmr-history/{options.region}/{encoded_name}/{encoded_tag}"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
-    async def get_raw_data(
-        self, type: str, value: str, region: str, queries: Dict[str, Any]
-    ) -> APIResponse:
-        self._validate(
-            {"type": type, "value": value, "region": region, "queries": queries}
-        )
+    async def get_mmr(self, options: GetMMRFetchOptionsModel) -> APIResponseModel:
+        self._validate(options.model_dump())
+        query = self._query({"filter": options.filter})
+        encoded_region = quote(options.region)
+        encoded_version = quote(options.version)
+        url = f"{self.BASE_URL}/{encoded_version}/mmr/{encoded_region}/{options.name}/{options.tag}"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
+
+    async def get_raw_data(self, options: GetRawFetchOptionsModel) -> APIResponseModel:
+        self._validate(options.model_dump())
         url = f"{self.BASE_URL}/v1/raw"
-        return await self._fetch(
-            url,
-            method="POST",
-            body={"type": type, "value": value, "region": region, "queries": queries},
+        fetch_options = FetchOptionsModel(
+            url=url, type="POST", body=options.model_dump()
         )
+        return await self._fetch(fetch_options)
 
-    async def get_status(self, region: str) -> APIResponse:
-        self._validate({"region": region})
-        url = f"{self.BASE_URL}/v1/status/{region}"
-        return await self._fetch(url)
+    async def get_status(self, options: GetStatusFetchOptionsModel) -> APIResponseModel:
+        self._validate(options.model_dump())
+        url = f"{self.BASE_URL}/v1/status/{options.region}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
-    async def get_featured_items(self, version: str) -> APIResponse:
-        self._validate({"version": version})
-        url = f"{self.BASE_URL}/{version}/store-featured"
-        return await self._fetch(url)
+    async def get_featured_items(
+        self, options: GetFeaturedItemsFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        url = f"{self.BASE_URL}/{options.version}/store-featured"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
-    async def get_offers(self) -> APIResponse:
-        return await self._fetch(f"{self.BASE_URL}/v1/store-offers")
+    async def get_offers(self) -> APIResponseModel:
+        url = f"{self.BASE_URL}/v1/store-offers"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
-    async def get_version(self, region: Regions) -> APIResponse:
-        self._validate({"region": region})
-        url = f"{self.BASE_URL}/v1/version/{region}"
-        return await self._fetch(url)
+    async def get_version(
+        self, options: GetVersionFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        url = f"{self.BASE_URL}/v1/version/{options.region}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
     async def get_website(
-        self, country_code: str, filter: Optional[str] = None
-    ) -> APIResponse:
-        self._validate({"country_code": country_code})
-        query = self._query({"filter": filter})
-        url = f"{self.BASE_URL}/v1/website/{country_code}{f'?{query}' if query else ''}"
-        return await self._fetch(url)
+        self, options: GetWebsiteFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate({"country_code": options.country_code})
+        query = self._query({"filter": options.filter})
+        url = f"{self.BASE_URL}/v1/website/{options.country_code}"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        return await self._fetch(fetch_options)
 
-    async def get_crosshair(self, code: str, size: Optional[int] = None) -> APIResponse:
-        self._validate({"code": code})
-        query = self._query({"id": code, "size": size})
-        url = f"{self.BASE_URL}/v1/crosshair/generate/{code}{f'?{query}' if query else ''}"
-        return await self._fetch(url, rtype="arraybuffer")
+    async def get_crosshair(
+        self, options: GetCrosshairFetchOptionsModel
+    ) -> APIResponseModel:
+        self._validate(options.model_dump())
+        query = self._query({"id": options.code, "size": options.size})
+        url = f"{self.BASE_URL}/v1/crosshair/generate"
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url, rtype="arraybuffer")
+        return await self._fetch(fetch_options)

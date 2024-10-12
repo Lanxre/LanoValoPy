@@ -1,6 +1,9 @@
 import sys
 import os
 
+from lano_valo_py.valo_types.valo_enums import Episodes, MMRVersions, Regions
+from lano_valo_py.valo_types.valo_models import AccountFetchOptionsModel, GetMMRFetchOptionsModel
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
@@ -10,21 +13,23 @@ from lano_valo_py import LanoValoPy
 
 
 async def main():
-    api = LanoValoPy(token="YOUR_TOKEN_HERE")
+    # Initialize the API client with your token
+    api_client = LanoValoPy(token="YOUR_TOKEN_HERE")
 
-    # Get account details
-    account_data = await api.get_account(name="LANORE", tag="evil")
-    if account_data.error:
-        print(f"Error {account_data.status}: {account_data.error}")
-    else:
-        print(f"Account Data: {account_data.data}")
+    # Example: Get Account Information
+    account_options = AccountFetchOptionsModel(name="LANORE", tag="evil")
+    account_response = await api_client.get_account(account_options)
+    print(account_response)
 
-    # Get MMR
-    mmr_data = await api.get_mmr(version="v1", region="eu", name="LANORE", tag="evil")
-    if mmr_data.error:
-        print(f"Error {mmr_data.status}: {mmr_data.error}")
-    else:
-        print(f"MMR Data: {mmr_data.data}")
+    # Example: Get MMR by PUUID
+    mmr_options = GetMMRFetchOptionsModel(
+        version=MMRVersions.v1,
+        region=Regions.eu,
+        name="Lanore",
+        tag="evil",
+    )
+    mmr_response = await api_client.get_mmr(mmr_options)
+    print(mmr_response)
 
 
 if __name__ == "__main__":
