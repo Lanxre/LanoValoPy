@@ -1,7 +1,9 @@
 [discord]: https://discord.gg/wF9JHH55Kp
 
 <div align="center">
-    [![Downloads](https://static.pepy.tech/badge/lanovalopy)](https://pepy.tech/project/lanovalopy)
+
+[![Downloads](https://static.pepy.tech/badge/lanovalopy)](https://pepy.tech/project/lanovalopy)
+
 </div>
 
 # LanoValoPy (Lanore Valorant Python)
