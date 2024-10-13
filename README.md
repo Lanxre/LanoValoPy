@@ -36,6 +36,7 @@ Some requests may take longer.
 ```python
 import asyncio
 from lano_valo_py import LanoValoPy
+from lano_valo_py.valo_types.valo_enums import MMRVersions, Regions
 
 async def main():
     # Initialize the API client with your token
