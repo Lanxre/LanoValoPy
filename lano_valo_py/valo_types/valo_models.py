@@ -1,19 +1,21 @@
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
+
 from pydantic import BaseModel
 
 from .valo_enums import (
     CCRegions,
+    Episodes,
     FeaturedItemsVersion,
     LeaderboardEpisodes,
-    RawTypes,
-    Regions,
-    MMRVersions,
     LeaderboardVersions,
     Locales,
-    Modes,
     Maps,
-    Episodes,
+    MMRVersions,
+    Modes,
+    RawTypes,
+    Regions,
 )
+
 
 class FetchOptionsModel(BaseModel):
     url: str
@@ -129,4 +131,8 @@ class GetCrosshairFetchOptionsModel(BaseModel):
 
 
 class GetFeaturedItemsFetchOptionsModel(BaseModel):
+    version: FeaturedItemsVersion
+
+
+class GetStoreOffersFetchOptionsModel(BaseModel):
     version: FeaturedItemsVersion
