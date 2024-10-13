@@ -47,9 +47,9 @@ async def main():
     account_response = await api_client.get_account(account_options)
     print(account_response)
 
-    # Example: Get MMR by PUUID
+    # Example: Get MMR
     mmr_options = GetMMRFetchOptionsModel(
-        version=MMRVersions.v1,
+        version=MMRVersions.v2,
         region=Regions.eu,
         name="Lanore",
         tag="evil",
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 ## Download
 
 ``` bash
-pip install lanovalopy
+pip install lanovalopy@latest
 
 ```
 
