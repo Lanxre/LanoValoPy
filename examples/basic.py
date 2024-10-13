@@ -1,7 +1,7 @@
 import sys
 import os
 
-from lano_valo_py.valo_types.valo_enums import Episodes, MMRVersions, Regions
+from lano_valo_py.valo_types.valo_enums import MMRVersions, Regions
 from lano_valo_py.valo_types.valo_models import AccountFetchOptionsModel, GetMMRFetchOptionsModel
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
