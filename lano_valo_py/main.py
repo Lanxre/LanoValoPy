@@ -12,6 +12,7 @@ from lano_valo_py.valo_types import (
     CommunityNewsResponseModel,
     ContentResponseModel,
     ErrorObject,
+    EsportMatchDataResponseModel,
     FeaturedBundleResponseModelV1,
     FeaturedItemsVersion,
     FetchOptionsModel,
@@ -31,6 +32,7 @@ from lano_valo_py.valo_types.valo_models import (
     AccountFetchOptionsModel,
     GetContentFetchOptionsModel,
     GetCrosshairFetchOptionsModel,
+    GetEsportsMatchesFetchOptionsModel,
     GetFeaturedItemsFetchOptionsModel,
     GetLeaderboardOptionsModel,
     GetLifetimeMMRHistoryFetchOptionsModel,
@@ -620,3 +622,27 @@ class LanoValoPy:
             url += f"?{query}"
         fetch_options = FetchOptionsModel(url=url, rtype="arraybuffer")
         return await self._fetch(fetch_options)
+
+    async def get_esports_matches(
+        self, options: GetEsportsMatchesFetchOptionsModel
+    ) -> List[EsportMatchDataResponseModel]:
+        """
+        Gets the current esports matches.
+
+        Returns:
+            List[EsportsMatchResponseModel]: The current esports matches.
+        """
+        query = self._query(
+            {
+                "region": options.region.name if options.region else None,
+                "league": options.league.name if options.league else None,
+            }
+        )
+        url = f"{self.BASE_URL}/v1/esports/schedule"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [EsportMatchDataResponseModel(**x) for x in result.data]

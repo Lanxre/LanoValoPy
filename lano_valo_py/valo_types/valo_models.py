@@ -14,6 +14,8 @@ from .valo_enums import (
     Modes,
     RawTypes,
     Regions,
+    EsportsLeagues,
+    EsportsRegions,
 )
 
 
@@ -136,3 +138,8 @@ class GetFeaturedItemsFetchOptionsModel(BaseModel):
 
 class GetStoreOffersFetchOptionsModel(BaseModel):
     version: FeaturedItemsVersion
+
+
+class GetEsportsMatchesFetchOptionsModel(BaseModel):
+    region: Optional[EsportsRegions] = None
+    league: Optional[EsportsLeagues] = None
