@@ -26,6 +26,8 @@ from lano_valo_py.valo_types import (
     StatusDataResponseModel,
     StoreOffersResponseModelV1,
     StoreOffersResponseModelV2,
+    PremierTeamResponseModel,
+    PremierLeagueMatchesWrapperResponseModel,
 )
 from lano_valo_py.valo_types.valo_models import (
     AccountFetchByPUUIDOptionsModel,
@@ -48,6 +50,7 @@ from lano_valo_py.valo_types.valo_models import (
     GetStoreOffersFetchOptionsModel,
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
+    GetPremierTeamFetchOptionsModel,
 )
 
 
@@ -646,3 +649,75 @@ class LanoValoPy:
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return [EsportMatchDataResponseModel(**x) for x in result.data]
+
+    async def get_premier_team(
+        self, options: GetPremierTeamFetchOptionsModel
+    ) -> PremierTeamResponseModel:
+        """
+        Gets the premier team.
+
+        Args:
+            options (GetPremierTeamFetchOptionsModel): The options for the request.
+
+        Returns:
+            PremierTeamResponseModel: The premier team.
+        """
+        self._validate(options.model_dump())
+        url = f"{self.BASE_URL}/v1/premier/{options.team_name}/{options.team_tag}"
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return PremierTeamResponseModel(**result.data)
+
+    async def get_premier_team_history(
+        self, options: GetPremierTeamFetchOptionsModel
+    ) -> PremierLeagueMatchesWrapperResponseModel:
+        """
+        Gets the premier team history.
+
+        Args:
+            options (GetPremierTeamFetchOptionsModel): The options for the request.
+
+        Returns:
+            PremierLeagueMatchesWrapperResponseModel: The premier team history.
+        """
+        self._validate(options.model_dump())
+        url = (
+            f"{self.BASE_URL}/v1/premier/{options.team_name}/{options.team_tag}/history"
+        )
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return PremierLeagueMatchesWrapperResponseModel(**result.data)
+
+    async def get_premier_team_by_id(self, team_id: str) -> PremierTeamResponseModel:
+        """
+        Gets the premier team.
+
+        Args:
+            options (GetPremierTeamFetchOptionsModel): The options for the request.
+
+        Returns:
+            PremierTeamResponseModel: The premier team.
+        """
+        self._validate({"team_id": team_id})
+        url = f"{self.BASE_URL}/v1/premier/{team_id}"
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return PremierTeamResponseModel(**result.data)
+
+    async def get_premier_team_history_by_id(
+        self, team_id: str
+    ) -> PremierLeagueMatchesWrapperResponseModel:
+        """
+        Gets the premier team history.
+
+        Args:
+            options (GetPremierTeamFetchOptionsModel): The options for the request.
+
+        Returns:
+            PremierLeagueMatchesWrapperResponseModel: The premier team history.
+        """
+        self._validate({"team_id": team_id})
+        url = f"{self.BASE_URL}/v1/premier/{team_id}/history"
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return PremierLeagueMatchesWrapperResponseModel(**result.data)

@@ -143,3 +143,8 @@ class GetStoreOffersFetchOptionsModel(BaseModel):
 class GetEsportsMatchesFetchOptionsModel(BaseModel):
     region: Optional[EsportsRegions] = None
     league: Optional[EsportsLeagues] = None
+
+
+class GetPremierTeamFetchOptionsModel(BaseModel):
+    team_name: str
+    team_tag: str
