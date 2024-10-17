@@ -1,7 +1,7 @@
 import sys
 import os
 
-from lano_valo_py.valo_types.valo_enums import MMRVersions, Regions
+from lano_valo_py.valo_types.valo_enums import MMRVersions, Regions, AccountVersion
 from lano_valo_py.valo_types.valo_models import AccountFetchOptionsModel, GetMMRFetchOptionsModel
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -16,7 +16,7 @@ async def main():
     api_client = LanoValoPy(token="YOUR_TOKEN_HERE")
 
     # Example: Get Account Information
-    account_options = AccountFetchOptionsModel(name="LANORE", tag="evil")
+    account_options = AccountFetchOptionsModel(name="LANORE", tag="evil",version=AccountVersion.v2)
     account_response = await api_client.get_account(account_options)
     print(account_response)
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, NewType, Optional, Union
+from typing import Any, Dict, List, Literal, NewType, Optional, Union
 
 from pydantic import BaseModel
 
@@ -39,6 +39,26 @@ class AccountResponseModelV1(BaseModel):
     card: AccountCardResponseModelV1
     last_update: str
     last_update_raw: int
+
+    class Config:
+        extra = "ignore"
+
+    def __str__(self):
+        fields = "\n".join(
+            f"{key}={value!r}" for key, value in self.model_dump().items()
+        )
+        return f"{self.__class__.__name__}(\n{fields}\n)"
+
+
+class AccountResponseModelV2(BaseModel):
+    puuid: str
+    region: str
+    account_level: int
+    name: str
+    tag: str
+    title: str
+    card: str
+    platform: List[Literal["PC", "CONSOLE"]]
 
     class Config:
         extra = "ignore"

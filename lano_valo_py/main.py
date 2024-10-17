@@ -5,6 +5,8 @@ import aiohttp
 
 from lano_valo_py.valo_types import (
     AccountResponseModelV1,
+    AccountResponseModelV2,
+    AccountVersion,
     APIResponseModel,
     BinaryData,
     BuildGameInfoResponseModel,
@@ -22,12 +24,12 @@ from lano_valo_py.valo_types import (
     MatchResponseModel,
     MMRHistoryByPuuidResponseModelV1,
     MMRResponseModel,
+    PremierLeagueMatchesWrapperResponseModel,
+    PremierTeamResponseModel,
     RateLimit,
     StatusDataResponseModel,
     StoreOffersResponseModelV1,
     StoreOffersResponseModelV2,
-    PremierTeamResponseModel,
-    PremierLeagueMatchesWrapperResponseModel,
 )
 from lano_valo_py.valo_types.valo_models import (
     AccountFetchByPUUIDOptionsModel,
@@ -45,12 +47,12 @@ from lano_valo_py.valo_types.valo_models import (
     GetMMRFetchOptionsModel,
     GetMMRHistoryByPUUIDFetchOptionsModel,
     GetMMRHistoryFetchOptionsModel,
+    GetPremierTeamFetchOptionsModel,
     GetRawFetchOptionsModel,
     GetStatusFetchOptionsModel,
     GetStoreOffersFetchOptionsModel,
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
-    GetPremierTeamFetchOptionsModel,
 )
 
 
@@ -219,7 +221,7 @@ class LanoValoPy:
 
     async def get_account(
         self, options: AccountFetchOptionsModel
-    ) -> AccountResponseModelV1:
+    ) -> AccountResponseModelV1 | AccountResponseModelV2:
         """
         Gets the account information for a given name and tag.
 
@@ -227,18 +229,25 @@ class LanoValoPy:
             options (AccountFetchOptionsModel): The options for the request.
 
         Returns:
-            AccountResponseModelV1: The account information.
+            AccountResponseModelV1 | AccountResponseModelV2: The account information.
         """
         self._validate(options.model_dump())
         query = self._query({"force": options.force})
         encoded_name = quote(options.name)
         encoded_tag = quote(options.tag)
-        url = f"{self.BASE_URL}/v1/account/{encoded_name}/{encoded_tag}"
+        url = f"{self.BASE_URL}/{options.version.name}/account/{encoded_name}/{encoded_tag}"
         if query:
             url += f"?{query}"
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return AccountResponseModelV1(**result.data)
+
+        match options.version:
+            case AccountVersion.v1:
+                return AccountResponseModelV1(**result.data)
+            case AccountVersion.v2:
+                return AccountResponseModelV2(**result.data)
+            case _:
+                raise ValueError("Invalid version")
 
     async def get_account_by_puuid(
         self, options: AccountFetchByPUUIDOptionsModel

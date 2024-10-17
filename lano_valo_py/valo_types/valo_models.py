@@ -3,8 +3,11 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel
 
 from .valo_enums import (
+    AccountVersion,
     CCRegions,
     Episodes,
+    EsportsLeagues,
+    EsportsRegions,
     FeaturedItemsVersion,
     LeaderboardEpisodes,
     LeaderboardVersions,
@@ -14,8 +17,6 @@ from .valo_enums import (
     Modes,
     RawTypes,
     Regions,
-    EsportsLeagues,
-    EsportsRegions,
 )
 
 
@@ -29,6 +30,7 @@ class FetchOptionsModel(BaseModel):
 class AccountFetchOptionsModel(BaseModel):
     name: str
     tag: str
+    version: AccountVersion = "v1"
     force: Optional[bool] = None
 
 

@@ -117,6 +117,11 @@ class LeaderboardVersions(str, Enum):
     v3 = "v3"
 
 
+class AccountVersion(str, Enum):
+    v1 = "v1"
+    v2 = "v2"
+
+
 class Regions(str, Enum):
     eu = "eu"
     na = "na"
@@ -187,3 +192,8 @@ class EsportsLeagues(str, Enum):
     VRL_CIS = "vrl_cis"
     MENA_RESILIENCE = "mena_resilence"
     CHA = "cha"
+
+
+class Patforms(str, Enum):
+    pc = "PC"
+    console = "CONSOLE"
