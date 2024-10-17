@@ -58,7 +58,7 @@ class AccountResponseModelV2(BaseModel):
     tag: str
     title: str
     card: str
-    platform: List[Literal["PC", "CONSOLE"]]
+    platforms: List[Literal["PC", "CONSOLE"]]
 
     class Config:
         extra = "ignore"
