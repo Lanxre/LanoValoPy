@@ -22,13 +22,7 @@ jobs:
       - name: Configure Poetry to use the PyPI token
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
-        run: echo $POETRY_PYPI_TOKEN_PYPI
-
-
-      - name: Configure Poetry to use the PyPI token
-        env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
-        run: poetry config pypi-token.pypi $POETRY_PYPI_TOKEN_PYPI
+        run: poetry config pypi-token.pypi ${POETRY_PYPI_TOKEN_PYPI}
 
       - name: Install dependencies
         run: poetry install --no-root
