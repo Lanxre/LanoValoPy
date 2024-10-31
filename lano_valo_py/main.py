@@ -24,6 +24,7 @@ from lano_valo_py.valo_types import (
     MatchResponseModel,
     MMRHistoryByPuuidResponseModelV1,
     MMRResponseModel,
+    PlayerCardModelResponse,
     PremierLeagueMatchesWrapperResponseModel,
     PremierTeamResponseModel,
     RateLimit,
@@ -47,6 +48,7 @@ from lano_valo_py.valo_types.valo_models import (
     GetMMRFetchOptionsModel,
     GetMMRHistoryByPUUIDFetchOptionsModel,
     GetMMRHistoryFetchOptionsModel,
+    GetPlayerCardModel,
     GetPremierTeamFetchOptionsModel,
     GetRawFetchOptionsModel,
     GetStatusFetchOptionsModel,
@@ -58,6 +60,7 @@ from lano_valo_py.valo_types.valo_models import (
 
 class LanoValoPy:
     BASE_URL = "https://api.henrikdev.xyz/valorant"
+    VALORANT_API_URL = "https://valorant-api.com"
 
     def __init__(self, token: Optional[str] = None):
         """Initialize the client.
@@ -730,3 +733,31 @@ class LanoValoPy:
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return PremierLeagueMatchesWrapperResponseModel(**result.data)
+
+    async def get_player_cards(
+        self, options: GetPlayerCardModel
+    ) -> List[PlayerCardModelResponse]:
+        query = self._query({"language": options.language.value})
+        url = f"{self.VALORANT_API_URL}/v1/playercards"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [PlayerCardModelResponse(**x) for x in result.data]
+
+    async def get_player_card_by_uuid(
+        self, options: GetPlayerCardModel
+    ) -> PlayerCardModelResponse:
+        self._validate(options.model_dump(), ["uuid"])
+        query = self._query({"language": options.language.value})
+        url = f"{self.VALORANT_API_URL}/v1/playercards/{options.uuid}"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        print(url)
+        result = await self._fetch(fetch_options)
+        return PlayerCardModelResponse(**result.data)

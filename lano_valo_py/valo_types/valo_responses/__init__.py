@@ -16,3 +16,4 @@ from .v3_leaderboard import * # noqa
 from .match import * # noqa
 from .v1_esports_schedule import * # noqa
 from .premier import * # noqa
+from .v1_player_cards import * # noqa

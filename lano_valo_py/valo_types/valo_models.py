@@ -150,3 +150,8 @@ class GetEsportsMatchesFetchOptionsModel(BaseModel):
 class GetPremierTeamFetchOptionsModel(BaseModel):
     team_name: str
     team_tag: str
+
+
+class GetPlayerCardModel(BaseModel):
+    uuid: Optional[str] = None
+    language: Optional[Locales] = Locales.en_US
