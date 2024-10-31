@@ -19,12 +19,6 @@ jobs:
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 -
 
-      - name: Debug Token
-        env:
-          MY_TOKEN: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
-        run: |
-          echo "Token: $MY_TOKEN"  # Выводим токен для отладки
-
       - name: Configure Poetry to use the PyPI token
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
