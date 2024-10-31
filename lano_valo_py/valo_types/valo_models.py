@@ -155,3 +155,8 @@ class GetPremierTeamFetchOptionsModel(BaseModel):
 class GetPlayerCardModel(BaseModel):
     uuid: Optional[str] = None
     language: Optional[Locales] = Locales.en_US
+
+
+class GetPlayerTitleModel(BaseModel):
+    uuid: Optional[str] = None
+    language: Optional[Locales] = Locales.en_US

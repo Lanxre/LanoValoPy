@@ -25,6 +25,7 @@ from lano_valo_py.valo_types import (
     MMRHistoryByPuuidResponseModelV1,
     MMRResponseModel,
     PlayerCardModelResponse,
+    PlayerTitleModelResponse,
     PremierLeagueMatchesWrapperResponseModel,
     PremierTeamResponseModel,
     RateLimit,
@@ -49,6 +50,7 @@ from lano_valo_py.valo_types.valo_models import (
     GetMMRHistoryByPUUIDFetchOptionsModel,
     GetMMRHistoryFetchOptionsModel,
     GetPlayerCardModel,
+    GetPlayerTitleModel,
     GetPremierTeamFetchOptionsModel,
     GetRawFetchOptionsModel,
     GetStatusFetchOptionsModel,
@@ -758,6 +760,54 @@ class LanoValoPy:
             url += f"?{query}"
 
         fetch_options = FetchOptionsModel(url=url)
-        print(url)
         result = await self._fetch(fetch_options)
         return PlayerCardModelResponse(**result.data)
+
+    async def get_player_titles(
+        self, options: GetPlayerTitleModel
+    ) -> List[PlayerTitleModelResponse]:
+        """
+        Gets the player titles.
+
+        Args:
+            options (GetPlayerTitleModel): The options for the request.
+
+        Returns:
+            List[PlayerTitleModelResponse]: The player titles.
+        """
+        query = self._query({"language": options.language.value})
+        url = f"{self.VALORANT_API_URL}/v1/playertitles"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [PlayerTitleModelResponse(**x) for x in result.data]
+
+    async def get_player_title_by_uuid(
+        self, options: GetPlayerTitleModel
+    ) -> PlayerTitleModelResponse:
+        """
+        Fetches a player title by UUID.
+
+        Args:
+            options (GetPlayerTitleModel): The options containing the UUID of the player title
+            and optional language preference.
+
+        Returns:
+            PlayerTitleModelResponse: The response model containing details of the player title.
+
+        Raises:
+            ValidationError: If the UUID is not provided in the options.
+        """
+        self._validate(options.model_dump(), ["uuid"])
+        query = self._query({"language": options.language.value})
+        url = f"{self.VALORANT_API_URL}/v1/playertitles/{options.uuid}"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return PlayerTitleModelResponse(**result.data)
