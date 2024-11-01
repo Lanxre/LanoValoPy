@@ -12,3 +12,4 @@ from .status import *  # noqa
 from .store import *  # noqa
 from .version import *  # noqa
 from .website import *  # noqa
+from .content import *  # noqa
