@@ -1,4 +1,5 @@
-from .main import LanoValoPy
-from .valo_types import Regions, Maps, Episodes, MMRVersions, LeaderboardVersions
+from .based_api import BasedApi
+from .game_api import GameApi
+from .lanovalopy import LanoValoPy
 
-__all__ = ["LanoValoPy", "Regions", "Maps", "Episodes", "MMRVersions", "LeaderboardVersions"]
+__all__ = ["BasedApi",  "GameApi", "LanoValoPy"]

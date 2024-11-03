@@ -1,0 +1,94 @@
+from typing import List
+
+from .based_api import BasedApi
+from .valo_types.valo_responses import (
+    PlayerCardModelResponse,
+    PlayerTitleModelResponse,
+)
+from .valo_types.valo_models import (
+    GetPlayerCardModel,
+    GetPlayerTitleModel,
+    FetchOptionsModel,
+)
+
+class GameApi(BasedApi):
+    BASE_URL = "https://valorant-api.com"
+
+    def __init__(self):
+        self.headers = {"User-Agent": "LanoValoPy"}
+
+    async def get_player_cards(
+        self, options: GetPlayerCardModel
+    ) -> List[PlayerCardModelResponse]:
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/playercards"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [PlayerCardModelResponse(**x) for x in result.data]
+
+    async def get_player_card_by_uuid(
+        self, options: GetPlayerCardModel
+    ) -> PlayerCardModelResponse:
+        self._validate(options.model_dump(), ["uuid"])
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/playercards/{options.uuid}"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return PlayerCardModelResponse(**result.data)
+
+    async def get_player_titles(
+        self, options: GetPlayerTitleModel
+    ) -> List[PlayerTitleModelResponse]:
+        """
+        Gets the player titles.
+
+        Args:
+            options (GetPlayerTitleModel): The options for the request.
+
+        Returns:
+            List[PlayerTitleModelResponse]: The player titles.
+        """
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/playertitles"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [PlayerTitleModelResponse(**x) for x in result.data]
+
+    async def get_player_title_by_uuid(
+        self, options: GetPlayerTitleModel
+    ) -> PlayerTitleModelResponse:
+        """
+        Fetches a player title by UUID.
+
+        Args:
+            options (GetPlayerTitleModel): The options containing the UUID of the player title
+            and optional language preference.
+
+        Returns:
+            PlayerTitleModelResponse: The response model containing details of the player title.
+
+        Raises:
+            ValidationError: If the UUID is not provided in the options.
+        """
+        self._validate(options.model_dump(), ["uuid"])
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/playertitles/{options.uuid}"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return PlayerTitleModelResponse(**result.data)
