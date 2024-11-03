@@ -4,12 +4,15 @@ from .based_api import BasedApi
 from .valo_types.valo_responses import (
     PlayerCardModelResponse,
     PlayerTitleModelResponse,
+    AgentResponseModel,
 )
 from .valo_types.valo_models import (
     GetPlayerCardModel,
     GetPlayerTitleModel,
+    GetAgentsModel,
     FetchOptionsModel,
 )
+
 
 class GameApi(BasedApi):
     BASE_URL = "https://valorant-api.com"
@@ -92,3 +95,26 @@ class GameApi(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return PlayerTitleModelResponse(**result.data)
+
+    async def get_agents(self, options: GetAgentsModel) -> List[AgentResponseModel]:
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/agents"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [AgentResponseModel(**x) for x in result.data]
+
+    async def get_agent_by_uuid(self, options: GetAgentsModel) -> AgentResponseModel:
+        self._validate(options.model_dump(), ["uuid"])
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/agents/{options.uuid}"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return AgentResponseModel(**result.data)
