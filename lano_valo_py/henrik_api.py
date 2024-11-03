@@ -159,7 +159,6 @@ class HenrikAPI(BasedApi):
         url = (
             f"{self.BASE_URL}/v1/by-puuid/mmr-history/{options.region}/{options.puuid}"
         )
-        print(url)
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return MMRHistoryByPuuidResponseModelV1(**result.data)
@@ -339,7 +338,6 @@ class HenrikAPI(BasedApi):
             url += f"?{query}"
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        print(result.data)
         return MMRResponseModel(**result.data)
 
     async def get_raw_data(self, options: GetRawFetchOptionsModel) -> APIResponseModel:
