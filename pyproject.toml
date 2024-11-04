@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "LanoValoPy"
-version = "0.6.0"
+version = "0.7.0"
 description = "This is a wrapper for the Valorant API, source: https://github.com/henrikdev/valorant-api"
 authors = ["Lanxre <73068449+Lanxre@users.noreply.github.com>"]
 readme = "README.md"
