@@ -14,3 +14,4 @@ from .version import *  # noqa
 from .website import *  # noqa
 from .content import *  # noqa
 from .game_agents_content import *  # noqa
+from .game_maps_content import *  # noqa

@@ -19,3 +19,4 @@ from .premier import * # noqa
 from .v1_player_cards import * # noqa
 from .v1_player_titles import * # noqa
 from .v1_game_agents import * # noqa
+from .v1_game_maps import * # noqa

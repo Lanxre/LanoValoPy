@@ -27,6 +27,7 @@ from .valo_types.valo_models import (
     GetPlayerCardModel,
     GetPlayerTitleModel,
     GetAgentsModel,
+    GetGameMapsModel,
 )
 from .valo_types.valo_responses import (
     AccountResponseModelV1,
@@ -52,11 +53,13 @@ from .valo_types.valo_responses import (
     PlayerTitleModelResponse,
     PlayerCardModelResponse,
     AgentResponseModel,
+    MapModelResponse,
 )
 
 from .lanologger import LoggerBuilder
 
 logger = LoggerBuilder("LanoValoPy").add_stream_handler().build()
+
 
 class LanoValoPy:
     def __init__(
@@ -69,8 +72,9 @@ class LanoValoPy:
         self.game_api = game_api or GameApi()
 
         if henrik_token is None:
-            logger.info('Henrik token not provided. LanoValoPy will not be able to make some requests to the Henrik API.')
-
+            logger.info(
+                "Henrik token not provided. LanoValoPy will not be able to make some requests to the Henrik API."
+            )
 
     @property
     def get_game_data(self) -> HenrikAPI:
@@ -409,12 +413,14 @@ class LanoValoPy:
         """
         return await self.game_api.get_player_title_by_uuid(options)
 
-    async def get_agents(
-        self, options: GetAgentsModel
-    ) -> List[AgentResponseModel]:
+    async def get_agents(self, options: GetAgentsModel) -> List[AgentResponseModel]:
         return await self.game_api.get_agents(options)
 
-    async def get_agent_by_uuid(
-        self, options: GetAgentsModel
-    ) -> AgentResponseModel:
+    async def get_agent_by_uuid(self, options: GetAgentsModel) -> AgentResponseModel:
         return await self.game_api.get_agent_by_uuid(options)
+
+    async def get_maps(self, options: GetGameMapsModel) -> List[MapModelResponse]:
+        return await self.game_api.get_maps(options)
+
+    async def get_map_by_uuid(self, options: GetGameMapsModel) -> MapModelResponse:
+        return await self.game_api.get_map_by_uuid(options)

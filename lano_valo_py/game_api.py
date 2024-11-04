@@ -1,16 +1,18 @@
 from typing import List
 
 from .based_api import BasedApi
-from .valo_types.valo_responses import (
-    PlayerCardModelResponse,
-    PlayerTitleModelResponse,
-    AgentResponseModel,
-)
 from .valo_types.valo_models import (
+    FetchOptionsModel,
+    GetAgentsModel,
+    GetGameMapsModel,
     GetPlayerCardModel,
     GetPlayerTitleModel,
-    GetAgentsModel,
-    FetchOptionsModel,
+)
+from .valo_types.valo_responses import (
+    AgentResponseModel,
+    MapModelResponse,
+    PlayerCardModelResponse,
+    PlayerTitleModelResponse,
 )
 
 
@@ -118,3 +120,26 @@ class GameApi(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return AgentResponseModel(**result.data)
+
+    async def get_maps(self, options: GetGameMapsModel) -> List[MapModelResponse]:
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/maps"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [MapModelResponse(**x) for x in result.data]
+
+    async def get_map_by_uuid(self, options: GetGameMapsModel) -> MapModelResponse:
+        self._validate(options.model_dump(), ["uuid"])
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/maps/{options.uuid}"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return MapModelResponse(**result.data)
