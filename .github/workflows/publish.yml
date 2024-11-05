@@ -25,7 +25,7 @@ jobs:
         run: poetry config pypi-token.pypi ${POETRY_PYPI_TOKEN_PYPI}
 
       - name: Install dependencies
-        run: poetry install --no-root
+        run: poetry install --no-root --without dev
 
       - name: Publish to PyPI
         run: poetry publish --build
