@@ -1,14 +1,18 @@
 from typing import List, Optional
 
-from .henrik_api import HenrikAPI
 from .game_api import GameApi
+from .henrik_api import HenrikAPI
+from .lanologger import LoggerBuilder
 from .valo_types.valo_models import (
     AccountFetchByPUUIDOptionsModel,
     AccountFetchOptionsModel,
+    GetAgentsModel,
     GetContentFetchOptionsModel,
     GetCrosshairFetchOptionsModel,
     GetEsportsMatchesFetchOptionsModel,
     GetFeaturedItemsFetchOptionsModel,
+    GetGameMapsModel,
+    GetGameWeaponsModel,
     GetLeaderboardOptionsModel,
     GetLifetimeMMRHistoryFetchOptionsModel,
     GetMatchesByPUUIDFetchOptionsModel,
@@ -18,45 +22,45 @@ from .valo_types.valo_models import (
     GetMMRFetchOptionsModel,
     GetMMRHistoryByPUUIDFetchOptionsModel,
     GetMMRHistoryFetchOptionsModel,
+    GetPlayerCardModel,
+    GetPlayerTitleModel,
     GetPremierTeamFetchOptionsModel,
     GetRawFetchOptionsModel,
     GetStatusFetchOptionsModel,
     GetStoreOffersFetchOptionsModel,
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
-    GetPlayerCardModel,
-    GetPlayerTitleModel,
-    GetAgentsModel,
-    GetGameMapsModel,
 )
 from .valo_types.valo_responses import (
     AccountResponseModelV1,
     AccountResponseModelV2,
+    AgentResponseModel,
     APIResponseModel,
     BinaryData,
     BuildGameInfoResponseModel,
     BundleResponseModelV2,
+    ChromaGameWeaponResponseModel,
     CommunityNewsResponseModel,
     ContentResponseModel,
     EsportMatchDataResponseModel,
     FeaturedBundleResponseModelV1,
     LeaderboardDataResponseModelV2,
     LeaderboardDataResponseModelV3,
+    LevelGameWeaponResponseModel,
+    MapModelResponse,
     MatchResponseModel,
     MMRHistoryByPuuidResponseModelV1,
     MMRResponseModel,
+    PlayerCardModelResponse,
+    PlayerTitleModelResponse,
     PremierLeagueMatchesWrapperResponseModel,
     PremierTeamResponseModel,
     StatusDataResponseModel,
     StoreOffersResponseModelV1,
     StoreOffersResponseModelV2,
-    PlayerTitleModelResponse,
-    PlayerCardModelResponse,
-    AgentResponseModel,
-    MapModelResponse,
+    WeaponResponseModel,
+    WeaponSkinGameWeaponResponseModel,
 )
-
-from .lanologger import LoggerBuilder
 
 logger = LoggerBuilder("LanoValoPy").add_stream_handler().build()
 
@@ -428,3 +432,43 @@ class LanoValoPy:
 
     async def get_map_by_uuid(self, options: GetGameMapsModel) -> MapModelResponse:
         return await self.game_api.get_map_by_uuid(options)
+
+    async def get_weapons(
+        self, options: GetGameWeaponsModel
+    ) -> List[WeaponResponseModel]:
+        return await self.game_api.get_weapons(options)
+
+    async def get_weapons_by_uuid(
+        self, options: GetGameWeaponsModel
+    ) -> WeaponResponseModel:
+        return await self.game_api.get_weapons_by_uuid(options)
+
+    async def get_weapons_skins(
+        self, options: GetGameWeaponsModel
+    ) -> List[WeaponSkinGameWeaponResponseModel]:
+        return await self.game_api.get_weapons_skins(options)
+
+    async def get_weapons_skins_by_uuid(
+        self, options: GetGameWeaponsModel
+    ) -> WeaponSkinGameWeaponResponseModel:
+        return await self.game_api.get_weapons_skins_by_uuid(options)
+
+    async def get_weapons_skins_chromas(
+        self, options: GetGameWeaponsModel
+    ) -> List[ChromaGameWeaponResponseModel]:
+        return await self.game_api.get_weapons_skins_chromas(options)
+
+    async def get_weapons_skins_chromas_by_uuid(
+        self, options: GetGameWeaponsModel
+    ) -> ChromaGameWeaponResponseModel:
+        return await self.game_api.get_weapons_skins_chromas_by_uuid(options)
+
+    async def get_weapons_skins_levels(
+        self, options: GetGameWeaponsModel
+    ) -> List[LevelGameWeaponResponseModel]:
+        return await self.game_api.get_weapons_skins_levels(options)
+
+    async def get_weapons_skins_levels_by_uuid(
+        self, options: GetGameWeaponsModel
+    ) -> LevelGameWeaponResponseModel:
+        return await self.game_api.get_weapons_skins_levels_by_uuid(options)
