@@ -13,14 +13,14 @@ def get_lanovalopy():
 
 
 @pytest.mark.asyncio
-async def test_get_valorant_news(get_lanovalopy):
+async def test_get_valorant_news(get_lanovalopy: LanoValoPy):
     website_options = GetWebsiteFetchOptionsModel(country_code=CCRegions.ru_ru)
     website_response = await get_lanovalopy.get_website(website_options)
     assert len(website_response) > 0
 
 
 @pytest.mark.asyncio
-async def test_get_mmr_by_puuid(get_lanovalopy):
+async def test_get_mmr_by_puuid(get_lanovalopy: LanoValoPy):
     mmr_options = GetMMRByPUUIDFetchOptionsModel(
         version=MMRVersions.v2,
         region=Regions.eu,
