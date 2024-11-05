@@ -80,6 +80,10 @@ class LanoValoPy:
     def get_game_data(self) -> HenrikAPI:
         return self.henrik_api
 
+    @property
+    def get_game_api(self) -> GameApi:
+        return self.game_api
+
     async def get_account(
         self, options: AccountFetchOptionsModel
     ) -> AccountResponseModelV1 | AccountResponseModelV2:
@@ -292,7 +296,7 @@ class LanoValoPy:
         Returns:
             List[CommunityNewsResponseModel]: The community news.
         """
-        return self.henrik_api.get_website(options)
+        return await self.henrik_api.get_website(options)
 
     async def get_crosshair(self, options: GetCrosshairFetchOptionsModel) -> BinaryData:
         """
