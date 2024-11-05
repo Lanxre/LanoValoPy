@@ -1,5 +1,5 @@
 import logging
-from typing import Self
+from typing import Callable, Self
 
 
 class LanoFormatter(logging.Formatter):
@@ -127,3 +127,21 @@ class LoggerBuilder:
                 logger.addHandler(handler)
 
         return logger
+
+    def set_debug_mode(self, func: Callable):
+        def wrapper(*args, **kwargs):
+            logger = logging.getLogger(self._name)
+
+            if self._level == logging.DEBUG:
+                logger.debug(
+                    f"Function {func.__name__} called with args: {args}, kwargs: {kwargs}"
+                )
+
+            result = func(*args, **kwargs)
+
+            if self._level == logging.DEBUG:
+                logger.debug(f"Function {func.__name__} returned: {result}")
+
+            return result
+
+        return wrapper
