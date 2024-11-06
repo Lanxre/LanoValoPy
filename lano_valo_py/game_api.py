@@ -4,6 +4,8 @@ from .based_api import BasedApi
 from .valo_types.valo_models import (
     FetchOptionsModel,
     GetAgentsModel,
+    GetGameBorderLevelsModel,
+    GetGameGearModel,
     GetGameMapsModel,
     GetGameWeaponsModel,
     GetPlayerCardModel,
@@ -11,7 +13,9 @@ from .valo_types.valo_models import (
 )
 from .valo_types.valo_responses import (
     AgentResponseModel,
+    BorderLevelModelResponse,
     ChromaGameWeaponResponseModel,
+    GearModelResponse,
     LevelGameWeaponResponseModel,
     MapModelResponse,
     PlayerCardModelResponse,
@@ -176,7 +180,6 @@ class GameApi(BasedApi):
         result = await self._fetch(fetch_options)
         return WeaponResponseModel(**result.data)
 
-
     async def get_weapons_skins(
         self, options: GetGameWeaponsModel
     ) -> List[WeaponSkinGameWeaponResponseModel]:
@@ -189,7 +192,6 @@ class GameApi(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return [WeaponSkinGameWeaponResponseModel(**x) for x in result.data]
-    
 
     async def get_weapons_skins_by_uuid(
         self, options: GetGameWeaponsModel
@@ -204,7 +206,6 @@ class GameApi(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return WeaponSkinGameWeaponResponseModel(**result.data)
-    
 
     async def get_weapons_skins_chromas(
         self, options: GetGameWeaponsModel
@@ -218,7 +219,6 @@ class GameApi(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return [ChromaGameWeaponResponseModel(**x) for x in result.data]
-    
 
     async def get_weapons_skins_chromas_by_uuid(
         self, options: GetGameWeaponsModel
@@ -233,8 +233,7 @@ class GameApi(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return ChromaGameWeaponResponseModel(**result.data)
-    
-    
+
     async def get_weapons_skins_levels(
         self, options: GetGameWeaponsModel
     ) -> List[LevelGameWeaponResponseModel]:
@@ -247,7 +246,6 @@ class GameApi(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return [LevelGameWeaponResponseModel(**x) for x in result.data]
-    
 
     async def get_weapons_skins_levels_by_uuid(
         self, options: GetGameWeaponsModel
@@ -262,3 +260,53 @@ class GameApi(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return LevelGameWeaponResponseModel(**result.data)
+
+    async def get_border_levels(
+        self, options: GetGameBorderLevelsModel
+    ) -> List[BorderLevelModelResponse]:
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/levelborders"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [BorderLevelModelResponse(**x) for x in result.data]
+
+    async def get_border_levels_by_uuid(
+        self, options: GetGameBorderLevelsModel
+    ) -> BorderLevelModelResponse:
+        self._validate(options.model_dump(), ["uuid"])
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/levelborders/{options.uuid}"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return BorderLevelModelResponse(**result.data)
+
+    async def get_gear(self, options: GetGameGearModel) -> List[GearModelResponse]:
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/gear"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [GearModelResponse(**x) for x in result.data]
+
+    async def get_gear_by_uuid(self, options: GetGameGearModel) -> GearModelResponse:
+        self._validate(options.model_dump(), ["uuid"])
+        query = self._query({"language": options.language.value})
+        url = f"{self.BASE_URL}/v1/gear/{options.uuid}"
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return GearModelResponse(**result.data)

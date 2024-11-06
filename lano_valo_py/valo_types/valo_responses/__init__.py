@@ -21,3 +21,5 @@ from .v1_player_titles import * # noqa
 from .v1_game_agents import * # noqa
 from .v1_game_maps import * # noqa
 from .v1_game_weapons import * # noqa
+from .v1_game_border_levels import * # noqa
+from .v1_game_gear import * # noqa

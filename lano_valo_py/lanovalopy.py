@@ -11,6 +11,8 @@ from .valo_types.valo_models import (
     GetCrosshairFetchOptionsModel,
     GetEsportsMatchesFetchOptionsModel,
     GetFeaturedItemsFetchOptionsModel,
+    GetGameBorderLevelsModel,
+    GetGameGearModel,
     GetGameMapsModel,
     GetGameWeaponsModel,
     GetLeaderboardOptionsModel,
@@ -37,6 +39,7 @@ from .valo_types.valo_responses import (
     AgentResponseModel,
     APIResponseModel,
     BinaryData,
+    BorderLevelModelResponse,
     BuildGameInfoResponseModel,
     BundleResponseModelV2,
     ChromaGameWeaponResponseModel,
@@ -44,6 +47,7 @@ from .valo_types.valo_responses import (
     ContentResponseModel,
     EsportMatchDataResponseModel,
     FeaturedBundleResponseModelV1,
+    GearModelResponse,
     LeaderboardDataResponseModelV2,
     LeaderboardDataResponseModelV3,
     LevelGameWeaponResponseModel,
@@ -472,3 +476,19 @@ class LanoValoPy:
         self, options: GetGameWeaponsModel
     ) -> LevelGameWeaponResponseModel:
         return await self.game_api.get_weapons_skins_levels_by_uuid(options)
+
+    async def get_border_levels(
+        self, options: GetGameBorderLevelsModel
+    ) -> List[BorderLevelModelResponse]:
+        return await self.game_api.get_border_levels(options)
+
+    async def get_border_levels_by_uuid(
+        self, options: GetGameBorderLevelsModel
+    ) -> BorderLevelModelResponse:
+        return await self.game_api.get_border_levels_by_uuid(options)
+
+    async def get_gear(self, options: GetGameGearModel) -> List[GearModelResponse]:
+        return await self.game_api.get_gear(options)
+
+    async def get_gear_by_uuid(self, options: GetGameGearModel) -> GearModelResponse:
+        return await self.game_api.get_gear_by_uuid(options)
