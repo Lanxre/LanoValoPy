@@ -2,6 +2,7 @@ from .general import *  # noqa
 from .v1_account import *  # noqa
 from .v2_account import *  # noqa
 from .mmr import *  # noqa
+from .v1_stored_mmr_history import * # noqa
 from .v1_mmr_history import *  # noqa
 from .v1_website import *  # noqa
 from .v1_version import *  # noqa

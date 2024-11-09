@@ -24,6 +24,8 @@ from .valo_types.valo_models import (
     GetMMRFetchOptionsModel,
     GetMMRHistoryByPUUIDFetchOptionsModel,
     GetMMRHistoryFetchOptionsModel,
+    GetMMRStoredHistoryByPUUIDResponseModel,
+    GetMMRStoredHistoryOptionsModel,
     GetPlayerCardModel,
     GetPlayerTitleModel,
     GetPremierTeamFetchOptionsModel,
@@ -62,6 +64,7 @@ from .valo_types.valo_responses import (
     StatusDataResponseModel,
     StoreOffersResponseModelV1,
     StoreOffersResponseModelV2,
+    V1StoredMmrHistoryResponse,
     WeaponResponseModel,
     WeaponSkinGameWeaponResponseModel,
 )
@@ -492,3 +495,13 @@ class LanoValoPy:
 
     async def get_gear_by_uuid(self, options: GetGameGearModel) -> GearModelResponse:
         return await self.game_api.get_gear_by_uuid(options)
+
+    async def get_stored_mmr_history(
+        self, options: GetMMRStoredHistoryOptionsModel
+    ) -> List[V1StoredMmrHistoryResponse]:
+        return await self.henrik_api.get_stored_mmr_history(options)
+
+    async def get_stored_mmr_history_by_puuid(
+        self, options: GetMMRStoredHistoryByPUUIDResponseModel
+    ) -> List[V1StoredMmrHistoryResponse]:
+        return await self.henrik_api.get_stored_mmr_history_by_puuid(options)

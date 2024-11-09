@@ -6,6 +6,7 @@ from .valo_types.valo_enums import (
     AccountVersion,
     FeaturedItemsVersion,
     LeaderboardVersions,
+    MMRVersions,
 )
 from .valo_types.valo_models import (
     AccountFetchByPUUIDOptionsModel,
@@ -24,6 +25,8 @@ from .valo_types.valo_models import (
     GetMMRFetchOptionsModel,
     GetMMRHistoryByPUUIDFetchOptionsModel,
     GetMMRHistoryFetchOptionsModel,
+    GetMMRStoredHistoryByPUUIDResponseModel,
+    GetMMRStoredHistoryOptionsModel,
     GetPremierTeamFetchOptionsModel,
     GetRawFetchOptionsModel,
     GetStatusFetchOptionsModel,
@@ -52,6 +55,7 @@ from .valo_types.valo_responses import (
     StatusDataResponseModel,
     StoreOffersResponseModelV1,
     StoreOffersResponseModelV2,
+    V1StoredMmrHistoryResponse,
 )
 
 
@@ -578,3 +582,50 @@ class HenrikAPI(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         return PremierLeagueMatchesWrapperResponseModel(**result.data)
+
+    async def get_stored_mmr_history(
+        self, options: GetMMRStoredHistoryOptionsModel
+    ) -> List[V1StoredMmrHistoryResponse]:
+        self._validate(options.model_dump())
+
+        if options.version is MMRVersions.v1:
+            url = f"{self.BASE_URL}/{options.version.value}/stored-mmr-history/{options.region.value}/{options.name}/{options.tag}"
+        else:
+            url = f"{self.BASE_URL}/{options.version.value}/stored-mmr-history/{options.region.value}/{options.platform}/{options.name}/{options.tag}"
+
+        url = f"{self.BASE_URL}/{options.version.value}/stored-mmr-history/{options.region.value}/{options.name}/{options.tag}"
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+
+        match options.version:
+            case MMRVersions.v1:
+                return [V1StoredMmrHistoryResponse(**x) for x in result.data]
+            case MMRVersions.v2:
+                return [V1StoredMmrHistoryResponse(**x) for x in result.data]
+            case _:
+                raise ValueError("Invalid version")
+
+        return V1StoredMmrHistoryResponse(**result.data)
+
+    async def get_stored_mmr_history_by_puuid(
+        self, options: GetMMRStoredHistoryByPUUIDResponseModel
+    ) -> List[V1StoredMmrHistoryResponse]:
+        self._validate(options.model_dump())
+
+        if options.version is MMRVersions.v1:
+            url = f"{self.BASE_URL}/{options.version.value}/by-puuid/stored-mmr-history/{options.region.value}/{options.puuid}"
+        else:
+            url = f"{self.BASE_URL}/{options.version.value}/by-puuid/stored-mmr-history/{options.region.value}/{options.platform}/{options.puuid}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+
+        match options.version:
+            case MMRVersions.v1:
+                return [V1StoredMmrHistoryResponse(**x) for x in result.data]
+            case MMRVersions.v2:
+                return [V1StoredMmrHistoryResponse(**x) for x in result.data]
+            case _:
+                raise ValueError("Invalid version")
+
+        return V1StoredMmrHistoryResponse(**result.data)

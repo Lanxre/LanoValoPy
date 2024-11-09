@@ -5,6 +5,7 @@ from .esports import *  # noqa
 from .leaderboard import *  # noqa
 from .match import *  # noqa
 from .mmr import *  # noqa
+from .mmr_stored_history import *  # noqa
 from .player_content import *  # noqa
 from .premier import *  # noqa
 from .raw import *  # noqa
