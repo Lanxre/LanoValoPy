@@ -12,7 +12,7 @@ from lano_valo_py import LanoValoPy
 
 async def main():
     # Initialize the API client with your token
-    api_client = LanoValoPy(token="YOUR_TOKEN_HERE")
+    api_client = LanoValoPy(henrik_token="YOUR_TOKEN_HERE")
     
     # Example: Get Server Status
     store_options = GetStatusFetchOptionsModel(region=Regions.eu)
