@@ -6,29 +6,6 @@ on:
       - master
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install Poetry
-        run: curl -sSL https://install.python-poetry.org | python3 -
-
-      - name: Configure Poetry to use the PyPI token
-        env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
-        run: poetry config pypi-token.pypi ${POETRY_PYPI_TOKEN_PYPI}
-
-      - name: Install dependencies
-        run: poetry install --no-root --without dev
-
-      - name: Publish to PyPI
-        run: poetry publish --build
 
   docs:
     runs-on: ubuntu-latest
@@ -62,3 +39,28 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/_build/html
           publish_branch: gh-pages
+
+
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install Poetry
+        run: curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Configure Poetry to use the PyPI token
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
+        run: poetry config pypi-token.pypi ${POETRY_PYPI_TOKEN_PYPI}
+
+      - name: Install dependencies
+        run: poetry install --no-root --without dev
+
+      - name: Publish to PyPI
+        run: poetry publish --build
