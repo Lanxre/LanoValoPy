@@ -154,7 +154,7 @@ class BasedApi(ABC):
         except ClientError as e:
             return APIResponseModel(
                 status=500,
-                data=None,
+                data=[],
                 ratelimits=None,
                 error=ErrorObject(message=str(e)),
                 url=fetch_options.url,
