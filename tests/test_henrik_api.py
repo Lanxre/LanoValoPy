@@ -1,8 +1,8 @@
 import pytest
 
 from lano_valo_py import LanoValoPy
-from lano_valo_py.valo_types.valo_enums import CCRegions, MMRVersions, Regions
-from lano_valo_py.valo_types.valo_models import GetWebsiteFetchOptionsModel, GetMMRByPUUIDFetchOptionsModel
+from lano_valo_py.valo_types.valo_enums import CCRegions, MMRVersions, Regions, Maps, Modes
+from lano_valo_py.valo_types.valo_models import GetWebsiteFetchOptionsModel, GetMMRByPUUIDFetchOptionsModel, GetStoredMatchesOptionsModel, GetStoredMatchesFilterModel
 
 from tests import Settings
 
@@ -28,3 +28,16 @@ async def test_get_mmr_by_puuid(get_lanovalopy: LanoValoPy):
     )
     mmr_response = await get_lanovalopy.get_mmr_by_puuid(mmr_options)
     assert mmr_response.current_data.elo
+
+@pytest.mark.asyncio
+async def test_get_stored_matches(get_lanovalopy: LanoValoPy):
+    stored_matches_options = GetStoredMatchesOptionsModel(
+        region=Regions.eu,
+        name="Lanore",
+        tag="evil",
+        map=Maps.bind,
+        mode=Modes.competitive,
+        filter = GetStoredMatchesFilterModel(size=20)
+    )
+    stored_matches_response = await get_lanovalopy.get_stored_matches(stored_matches_options)
+    assert len(stored_matches_response)
