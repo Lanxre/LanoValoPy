@@ -33,6 +33,7 @@ from .valo_types.valo_models import (
     GetStoreOffersFetchOptionsModel,
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
+    GetStoredMatchesOptionsModel,
 )
 from .valo_types.valo_responses import (
     AccountResponseModelV1,
@@ -56,6 +57,7 @@ from .valo_types.valo_responses import (
     StoreOffersResponseModelV1,
     StoreOffersResponseModelV2,
     V1StoredMmrHistoryResponse,
+    StoredMatchResponseModel,
 )
 
 
@@ -629,3 +631,15 @@ class HenrikAPI(BasedApi):
                 raise ValueError("Invalid version")
 
         return V1StoredMmrHistoryResponse(**result.data)
+
+    async def get_stored_matches(
+        self, options: GetStoredMatchesOptionsModel
+    ) -> List[StoredMatchResponseModel]:
+        self._validate(options.model_dump())
+        url = f"{self.BASE_URL}/v1/stored-matches/{options.region.value}/{options.name}/{options.tag}"
+        query = self._query({"page": options.filter.page, "size": options.filter.size, "mode": options.mode.value, "map": options.map.value})
+        if query:
+            url += f"?{query}"
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+        return [StoredMatchResponseModel(**match) for match in result.data]

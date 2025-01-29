@@ -24,3 +24,4 @@ from .v1_game_maps import * # noqa
 from .v1_game_weapons import * # noqa
 from .v1_game_border_levels import * # noqa
 from .v1_game_gear import * # noqa
+from .v1_stored_matches import * # noqa

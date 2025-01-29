@@ -34,6 +34,7 @@ from .valo_types.valo_models import (
     GetStoreOffersFetchOptionsModel,
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
+    GetStoredMatchesOptionsModel,
 )
 from .valo_types.valo_responses import (
     AccountResponseModelV1,
@@ -67,6 +68,7 @@ from .valo_types.valo_responses import (
     V1StoredMmrHistoryResponse,
     WeaponResponseModel,
     WeaponSkinGameWeaponResponseModel,
+    StoredMatchResponseModel,
 )
 
 logger = LoggerBuilder("LanoValoPy").add_stream_handler().build()
@@ -505,3 +507,8 @@ class LanoValoPy:
         self, options: GetMMRStoredHistoryByPUUIDResponseModel
     ) -> List[V1StoredMmrHistoryResponse]:
         return await self.henrik_api.get_stored_mmr_history_by_puuid(options)
+
+    async def get_stored_matches(
+        self, options: GetStoredMatchesOptionsModel
+    ) -> List[StoredMatchResponseModel]:
+        return await self.henrik_api.get_stored_matches(options)

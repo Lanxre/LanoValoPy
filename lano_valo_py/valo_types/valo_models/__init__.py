@@ -19,3 +19,4 @@ from .game_maps_content import *  # noqa
 from .game_weapons import *  # noqa
 from .game_border_levels import *  # noqa
 from .game_gear import *  # noqa
+from .stored_matches import *  # noqa
