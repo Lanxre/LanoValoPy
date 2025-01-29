@@ -10,8 +10,9 @@ class Modes(str, Enum):
     replication = "replication"
     custom = "custom"
     newmap = "newmap"
-    snowball = "snowball"
-
+    snowballfight = "snowballfight"
+    teamdeathmatch = "teamdeathmatch"
+    swiftplay = "swiftplay"
 
 class Maps(str, Enum):
     ascent = "ascent"
@@ -19,9 +20,13 @@ class Maps(str, Enum):
     fracture = "fracture"
     bind = "bind"
     breeze = "breeze"
+    district = "district"
+    kasbah = "kasbah"
+    piazza = "piazza"
+    lotus = "lotus"
+    pearl = "pearl"
     icebox = "icebox"
     haven = "haven"
-    pearl = "pearl"
 
 
 class RawTypes(str, Enum):
