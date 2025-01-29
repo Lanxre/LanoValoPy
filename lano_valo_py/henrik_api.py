@@ -643,8 +643,8 @@ class HenrikAPI(BasedApi):
             {
                 "page": options.filter.page,
                 "size": options.filter.size,
-                "mode": options.mode.value,
-                "map": options.map.value,
+                "mode": options.mode.value if options.mode else '',
+                "map": options.map.value if options.map else '',
             }
         )
 
@@ -654,7 +654,10 @@ class HenrikAPI(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
 
-        return [StoredMatchResponseModel(**match) for match in result.data]
+        try:
+            return [StoredMatchResponseModel(**match) for match in result.data]
+        except TypeError:
+            return result
 
     async def get_stored_matches_by_puuid(
         self, options: GetStoredMatchesByPUUIDResponseModel
@@ -666,8 +669,8 @@ class HenrikAPI(BasedApi):
             {
                 "page": options.filter.page,
                 "size": options.filter.size,
-                "mode": options.mode.value,
-                "map": options.map.value,
+                "mode": options.mode.value if options.mode else '',
+                "map": options.map.value if options.map else '',
             }
         )
 
@@ -677,4 +680,7 @@ class HenrikAPI(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
 
-        return [StoredMatchResponseModel(**match) for match in result.data]
+        try:
+            return [StoredMatchResponseModel(**match) for match in result.data]
+        except TypeError:
+            return result
