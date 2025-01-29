@@ -35,6 +35,7 @@ from .valo_types.valo_models import (
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
     GetStoredMatchesOptionsModel,
+    GetStoredMatchesByPUUIDResponseModel,
 )
 from .valo_types.valo_responses import (
     AccountResponseModelV1,
@@ -512,3 +513,8 @@ class LanoValoPy:
         self, options: GetStoredMatchesOptionsModel
     ) -> List[StoredMatchResponseModel]:
         return await self.henrik_api.get_stored_matches(options)
+
+    async def get_stored_matches_by_puuid(
+        self, options: GetStoredMatchesByPUUIDResponseModel
+    ) -> List[StoredMatchResponseModel]:
+        return await self.henrik_api.get_stored_matches_by_puuid(options)

@@ -34,6 +34,7 @@ from .valo_types.valo_models import (
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
     GetStoredMatchesOptionsModel,
+    GetStoredMatchesByPUUIDResponseModel,
 )
 from .valo_types.valo_responses import (
     AccountResponseModelV1,
@@ -637,9 +638,43 @@ class HenrikAPI(BasedApi):
     ) -> List[StoredMatchResponseModel]:
         self._validate(options.model_dump())
         url = f"{self.BASE_URL}/v1/stored-matches/{options.region.value}/{options.name}/{options.tag}"
-        query = self._query({"page": options.filter.page, "size": options.filter.size, "mode": options.mode.value, "map": options.map.value})
+        
+        query = self._query(
+            {
+                "page": options.filter.page,
+                "size": options.filter.size,
+                "mode": options.mode.value,
+                "map": options.map.value,
+            }
+        )
+
         if query:
             url += f"?{query}"
+
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
+
+        return [StoredMatchResponseModel(**match) for match in result.data]
+
+    async def get_stored_matches_by_puuid(
+        self, options: GetStoredMatchesByPUUIDResponseModel
+    ) -> List[StoredMatchResponseModel]:
+        self._validate(options.model_dump())
+        url = f"{self.BASE_URL}/v1/by-puuid/stored-matches/{options.region.value}/{options.puuid}"
+
+        query = self._query(
+            {
+                "page": options.filter.page,
+                "size": options.filter.size,
+                "mode": options.mode.value,
+                "map": options.map.value,
+            }
+        )
+
+        if query:
+            url += f"?{query}"
+
+        fetch_options = FetchOptionsModel(url=url)
+        result = await self._fetch(fetch_options)
+
         return [StoredMatchResponseModel(**match) for match in result.data]
