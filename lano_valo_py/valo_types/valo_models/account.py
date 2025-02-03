@@ -15,3 +15,10 @@ class AccountFetchOptionsModel(BaseModel):
 class AccountFetchByPUUIDOptionsModel(BaseModel):
     puuid: str
     force: Optional[bool] = None
+
+
+class AccountFetchOptionsModelV2(BaseModel):
+    name: Optional[str] = None
+    tag: Optional[str] = None
+    puuid: Optional[str] = None
+    force: Optional[bool] = None

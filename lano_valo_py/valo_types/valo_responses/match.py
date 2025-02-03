@@ -50,10 +50,10 @@ class MatchBehaviourModel(BaseModel):
 
 
 class MatchAbilityCastsModel(BaseModel):
-    c_cast: int
-    q_cast: int
-    e_cast: int
-    x_cast: int
+    c_cast: Optional[int] = None
+    q_cast: Optional[int] = None
+    e_cast: Optional[int] = None
+    x_cast: Optional[int] = None
 
 
 class MatchStatsModel(BaseModel):
@@ -67,18 +67,18 @@ class MatchStatsModel(BaseModel):
 
 
 class MatchEconomySpentModel(BaseModel):
-    overall: float
-    average: float
+    overall: float | int
+    average: float | int
 
 
 class MatchEconomyLoadoutValueModel(BaseModel):
-    overall: float
-    average: float
+    overall: float | int
+    average: float | int
 
 
 class MatchEconomyModel(BaseModel):
-    spent: MatchEconomySpentModel
-    loadout_value: MatchEconomyLoadoutValueModel
+    spent: MatchEconomySpentModel | int
+    loadout_value: MatchEconomyLoadoutValueModel | int
 
 
 class MatchPlayerModel(BaseModel):
@@ -166,9 +166,144 @@ class MatchTeamsModel(BaseModel):
     blue: MatchTeamModel
 
 
+class MatchDamageEventsModel(BaseModel):
+    damage: int
+    headshots: int
+    bodyshots: int
+    legshots: int
+    receiver_puuid: str
+    receiver_display_name: str
+    receiver_team: str
+
+
+class MacthKillsVictimDeathLocationModel(BaseModel):
+    x: int
+    y: int
+
+
+class MatchDamageWeaponAssetsModel(BaseModel):
+    display_icon: Optional[str] = None
+    killfeed_icon: Optional[str] = None
+
+
+class MatchDamageAssistantsModel(BaseModel):
+    assistant_puuid: str
+    assistant_display_name: str
+    assistant_team: str
+
+
+class MatchDamagePlayerLocationsOnKillLocation(BaseModel):
+    x: int
+    y: int
+
+
+class MatchDamagePlayerLocationsOnKill(BaseModel):
+    view_radians: float
+    player_puuid: str
+    player_display_name: str
+    player_team: str
+    location: MatchDamagePlayerLocationsOnKillLocation
+
+
+class MatchKillsResponseModel(BaseModel):
+    kill_time_in_round: int
+    kill_time_in_match: int
+    round: Optional[int] = None
+    killer_puuid: str
+    killer_display_name: str
+    killer_team: str
+    victim_puuid: str
+    victim_display_name: str
+    victim_team: str
+    victim_death_location: Optional[MacthKillsVictimDeathLocationModel]
+    damage_weapon_id: str
+    damage_weapon_name: Optional[str] = None
+    damage_weapon_assets: MatchDamageWeaponAssetsModel
+    secondary_fire_mode: bool
+    assistants: Optional[List[MatchDamageAssistantsModel]]
+    player_locations_on_kill: Optional[List[MatchDamagePlayerLocationsOnKill]]
+
+
+class MatchRoundPlayerStatsModel(BaseModel):
+    ability_casts: MatchAbilityCastsModel
+    player_puuid: str
+    player_display_name: str
+    player_team: str
+    damage_events: List[MatchDamageEventsModel]
+    damage: int
+    headshots: int
+    bodyshots: int
+    legshots: int
+    kill_events: List[MatchKillsResponseModel]
+    kills: int
+    score: int
+    economy: Optional[MatchEconomyModel]
+    was_afk: bool
+    was_penalized: bool
+    stayed_in_spawn: bool
+
+
+MatchRoundPlayerLocationOnPlant = MatchDamagePlayerLocationsOnKill
+
+
+class MatchRoundPlantEventPlantLocationModel(BaseModel):
+    x: int
+    y: int
+
+
+class MatchRoundPlantedByModel(BaseModel):
+    puuid: str
+    display_name: str
+    team: str
+
+
+class MatchRoundPlantEventModel(BaseModel):
+    plant_location: Optional[MatchRoundPlantEventPlantLocationModel] = None
+    planted_by: Optional[MatchRoundPlantedByModel] = None
+    plant_site: Optional[str] = None
+    plant_time_in_round: Optional[int] = None
+    player_locations_on_plant: Optional[List[MatchRoundPlayerLocationOnPlant]] = None
+
+
+MatchRoundDefuseEventLocationModel = MatchRoundPlantEventPlantLocationModel
+MatchRoundDefuseEventDefusedByModel = MatchRoundPlantedByModel
+MatchRoundPlayerLocationOnDefuseModel = MatchRoundPlayerLocationOnPlant
+
+
+class MatchRoundDefuseEventModel(BaseModel):
+    defuse_location: Optional[MatchRoundDefuseEventLocationModel]
+    defused_by: Optional[MatchRoundDefuseEventDefusedByModel]
+    defuse_time_in_round: Optional[int]
+    player_locations_on_defuse: Optional[List[MatchRoundPlayerLocationOnDefuseModel]]
+
+
+class MatchRoundModel(BaseModel):
+    winning_team: str
+    end_type: str
+    bomb_planted: bool
+    bomb_defused: bool
+    plant_events: Optional[MatchRoundPlantEventModel]
+    defuse_events: Optional[MatchRoundDefuseEventModel]
+    player_stats: List[MatchRoundPlayerStatsModel]
+
+
 class MatchResponseModel(BaseModel):
     metadata: MatchMetadataModel
     players: MatchPlayersModel
     observers: List[MatchObserversModel]
     coaches: List[MatchCoachesModel]
     teams: MatchTeamsModel
+    rounds: List[MatchRoundModel]
+    kills: List[MatchKillsResponseModel]
+
+
+class PlayerStatsModel(BaseModel):
+    kill_diff: int
+    kd_ratio: float
+    avg_kills_per_round: float
+    headshot_percent: float
+    kast: float
+    first_kills: int
+    first_deaths: int
+    multi_kills: int
+    avg_damage_per_round: float
