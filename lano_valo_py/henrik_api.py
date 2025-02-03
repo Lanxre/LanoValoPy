@@ -2,6 +2,8 @@ from typing import List, Optional
 from urllib.parse import quote
 
 from .based_api import BasedApi
+from .exeptions import UnauthorizedError
+from .lanologger import LoggerBuilder
 from .valo_types.valo_enums import (
     AccountVersion,
     FeaturedItemsVersion,
@@ -30,11 +32,11 @@ from .valo_types.valo_models import (
     GetPremierTeamFetchOptionsModel,
     GetRawFetchOptionsModel,
     GetStatusFetchOptionsModel,
+    GetStoredMatchesByPUUIDResponseModel,
+    GetStoredMatchesOptionsModel,
     GetStoreOffersFetchOptionsModel,
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
-    GetStoredMatchesOptionsModel,
-    GetStoredMatchesByPUUIDResponseModel,
 )
 from .valo_types.valo_responses import (
     AccountResponseModelV1,
@@ -55,11 +57,13 @@ from .valo_types.valo_responses import (
     PremierLeagueMatchesWrapperResponseModel,
     PremierTeamResponseModel,
     StatusDataResponseModel,
+    StoredMatchResponseModel,
     StoreOffersResponseModelV1,
     StoreOffersResponseModelV2,
     V1StoredMmrHistoryResponse,
-    StoredMatchResponseModel,
 )
+
+logger = LoggerBuilder("LanoValoPy").add_stream_handler().build()
 
 
 class HenrikAPI(BasedApi):
@@ -288,7 +292,11 @@ class HenrikAPI(BasedApi):
         url = f"{self.BASE_URL}/v2/match/{options.match_id}"
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return MatchResponseModel(**result.data)
+        try:
+            return MatchResponseModel(**result.data)
+        except TypeError:
+            logger.error(result.data)
+            raise UnauthorizedError("Unauthorized", result)
 
     async def get_mmr_history(
         self, options: GetMMRHistoryFetchOptionsModel
@@ -638,13 +646,13 @@ class HenrikAPI(BasedApi):
     ) -> List[StoredMatchResponseModel]:
         self._validate(options.model_dump())
         url = f"{self.BASE_URL}/v1/stored-matches/{options.region.value}/{options.name}/{options.tag}"
-        
+
         query = self._query(
             {
                 "page": options.filter.page,
                 "size": options.filter.size,
-                "mode": options.mode.value if options.mode else '',
-                "map": options.map.value if options.map else '',
+                "mode": options.mode.value if options.mode else "",
+                "map": options.map.value if options.map else "",
             }
         )
 
@@ -657,7 +665,8 @@ class HenrikAPI(BasedApi):
         try:
             return [StoredMatchResponseModel(**match) for match in result.data]
         except TypeError:
-            return result
+            logger.error(result.data)
+            raise UnauthorizedError("Unauthorized", result)
 
     async def get_stored_matches_by_puuid(
         self, options: GetStoredMatchesByPUUIDResponseModel
@@ -669,8 +678,8 @@ class HenrikAPI(BasedApi):
             {
                 "page": options.filter.page,
                 "size": options.filter.size,
-                "mode": options.mode.value if options.mode else '',
-                "map": options.map.value if options.map else '',
+                "mode": options.mode.value if options.mode else "",
+                "map": options.map.value if options.map else "",
             }
         )
 
@@ -683,4 +692,5 @@ class HenrikAPI(BasedApi):
         try:
             return [StoredMatchResponseModel(**match) for match in result.data]
         except TypeError:
-            return result
+            logger.error(result.data)
+            raise UnauthorizedError("Unauthorized", result)

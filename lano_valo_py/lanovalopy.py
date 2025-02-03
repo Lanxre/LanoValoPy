@@ -1,11 +1,14 @@
 from typing import List, Optional
 
+from .exeptions import UnauthorizedError
 from .game_api import GameApi
+from .game_stats import ValoGameStats
 from .henrik_api import HenrikAPI
 from .lanologger import LoggerBuilder
 from .valo_types.valo_models import (
     AccountFetchByPUUIDOptionsModel,
     AccountFetchOptionsModel,
+    AccountFetchOptionsModelV2,
     GetAgentsModel,
     GetContentFetchOptionsModel,
     GetCrosshairFetchOptionsModel,
@@ -31,11 +34,11 @@ from .valo_types.valo_models import (
     GetPremierTeamFetchOptionsModel,
     GetRawFetchOptionsModel,
     GetStatusFetchOptionsModel,
+    GetStoredMatchesByPUUIDResponseModel,
+    GetStoredMatchesOptionsModel,
     GetStoreOffersFetchOptionsModel,
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
-    GetStoredMatchesOptionsModel,
-    GetStoredMatchesByPUUIDResponseModel,
 )
 from .valo_types.valo_responses import (
     AccountResponseModelV1,
@@ -64,15 +67,15 @@ from .valo_types.valo_responses import (
     PremierLeagueMatchesWrapperResponseModel,
     PremierTeamResponseModel,
     StatusDataResponseModel,
+    StoredMatchResponseModel,
     StoreOffersResponseModelV1,
     StoreOffersResponseModelV2,
     V1StoredMmrHistoryResponse,
     WeaponResponseModel,
     WeaponSkinGameWeaponResponseModel,
-    StoredMatchResponseModel,
 )
 
-logger = LoggerBuilder("LanoValoPy").add_stream_handler().build()
+logger = LoggerBuilder("HenrikAPI").add_stream_handler().build()
 
 
 class LanoValoPy:
@@ -81,9 +84,11 @@ class LanoValoPy:
         henrik_token: Optional[str] = None,
         henrik_api: Optional[HenrikAPI] = None,
         game_api: Optional[GameApi] = None,
+        game_stats: Optional[ValoGameStats] = None,
     ):
         self.henrik_api = henrik_api or HenrikAPI(henrik_token)
         self.game_api = game_api or GameApi()
+        self.game_stats = game_stats or ValoGameStats()
 
         if henrik_token is None:
             logger.info(
@@ -518,3 +523,17 @@ class LanoValoPy:
         self, options: GetStoredMatchesByPUUIDResponseModel
     ) -> List[StoredMatchResponseModel]:
         return await self.henrik_api.get_stored_matches_by_puuid(options)
+
+    async def get_player_match_stats(
+        self,
+        player_options: AccountFetchOptionsModelV2,
+        match_options: GetMatchFetchOptionsModel,
+    ):
+        try:
+            match_data = await self.get_match(match_options)
+            stats = await self.game_stats.get_player_match_stats(player_options, match_data)
+            return stats
+        except UnauthorizedError:
+            logger.error(
+                "Unauthorized error occurred while fetching match data. Please check your API key and try again."
+            )
