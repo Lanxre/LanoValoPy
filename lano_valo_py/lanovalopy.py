@@ -70,6 +70,7 @@ from .valo_types.valo_responses import (
     StoredMatchResponseModel,
     StoreOffersResponseModelV1,
     StoreOffersResponseModelV2,
+    TotalPlayerStatsModel,
     V1StoredMmrHistoryResponse,
     WeaponResponseModel,
     WeaponSkinGameWeaponResponseModel,
@@ -528,7 +529,7 @@ class LanoValoPy:
         self,
         player_options: AccountFetchOptionsModelV2,
         match_options: GetMatchFetchOptionsModel,
-    ):
+    )-> TotalPlayerStatsModel:
         try:
             match_data = await self.get_match(match_options)
             stats = await self.game_stats.get_player_match_stats(player_options, match_data)

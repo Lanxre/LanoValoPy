@@ -307,3 +307,8 @@ class PlayerStatsModel(BaseModel):
     first_deaths: int
     multi_kills: int
     avg_damage_per_round: float
+
+
+class TotalPlayerStatsModel(BaseModel):
+    stats: PlayerStatsModel
+    duels: dict[str, int]
