@@ -1,10 +1,22 @@
 import pytest
 
 from lano_valo_py import LanoValoPy
-from lano_valo_py.valo_types.valo_enums import CCRegions, MMRVersions, Regions, Maps, Modes
-from lano_valo_py.valo_types.valo_models import GetWebsiteFetchOptionsModel, GetMMRByPUUIDFetchOptionsModel, GetStoredMatchesOptionsModel, GetStoredMatchesFilterModel
-
+from lano_valo_py.valo_types.valo_enums import (
+    CCRegions,
+    Maps,
+    MMRVersions,
+    Modes,
+    Regions,
+)
+from lano_valo_py.valo_types.valo_models import (
+    GetMMRByPUUIDFetchOptionsModel,
+    GetStoredMatchesFilterModel,
+    GetStoredMatchesOptionsModel,
+    GetWebsiteFetchOptionsModel,
+)
+from lano_valo_py.valo_types.valo_responses.v3_mmr import MmrModelV3
 from tests import Settings
+
 
 @pytest.fixture(scope="module")
 def get_lanovalopy():
@@ -22,12 +34,13 @@ async def test_get_valorant_news(get_lanovalopy: LanoValoPy):
 @pytest.mark.asyncio
 async def test_get_mmr_by_puuid(get_lanovalopy: LanoValoPy):
     mmr_options = GetMMRByPUUIDFetchOptionsModel(
-        version=MMRVersions.v2,
+        version=MMRVersions.v3,
         region=Regions.eu,
-        puuid='e4122af3-fa8c-582c-847d-42a3868925cd',
+        puuid="e4122af3-fa8c-582c-847d-42a3868925cd",
     )
-    mmr_response = await get_lanovalopy.get_mmr_by_puuid(mmr_options)
-    assert mmr_response.current_data.elo
+    mmr_response: MmrModelV3 = await get_lanovalopy.get_mmr_by_puuid(mmr_options)
+    assert mmr_response.current.elo
+
 
 @pytest.mark.asyncio
 async def test_get_stored_matches(get_lanovalopy: LanoValoPy):
@@ -37,7 +50,9 @@ async def test_get_stored_matches(get_lanovalopy: LanoValoPy):
         tag="evil",
         map=Maps.bind,
         mode=Modes.competitive,
-        filter = GetStoredMatchesFilterModel(size=20)
+        filter=GetStoredMatchesFilterModel(size=20),
     )
-    stored_matches_response = await get_lanovalopy.get_stored_matches(stored_matches_options)
+    stored_matches_response = await get_lanovalopy.get_stored_matches(
+        stored_matches_options
+    )
     assert len(stored_matches_response)

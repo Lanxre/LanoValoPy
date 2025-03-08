@@ -24,8 +24,13 @@ from .v1_game_border_levels import * # noqa
 from .v1_game_gear import * # noqa
 from .v1_stored_matches import * # noqa
 from .v3_mmr import MmrModelV3
+from .v2_mmr_history import MMRHistoryModelV2, HistoryMMRV2
+from .v4_matches import MatchDataV4
 
 
 __all__ = [
     "MmrModelV3",
+    "MMRHistoryModelV2",
+    "HistoryMMRV2",
+    "MatchDataV4"
 ]

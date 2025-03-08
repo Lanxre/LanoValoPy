@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from ..valo_enums import (
     Episodes,
+    MMRHistoryVersions,
     MMRVersions,
     Regions,
 )
@@ -19,6 +20,8 @@ class GetMMRByPUUIDFetchOptionsModel(BaseModel):
 class GetMMRHistoryByPUUIDFetchOptionsModel(BaseModel):
     region: Regions
     puuid: str
+    version: MMRHistoryVersions
+
 
 
 class GetLifetimeMMRHistoryFetchOptionsModel(BaseModel):
@@ -38,6 +41,7 @@ class GetMMRFetchOptionsModel(BaseModel):
 
 
 class GetMMRHistoryFetchOptionsModel(BaseModel):
-    region: Regions
     name: str
     tag: str
+    region: Regions
+    version: MMRHistoryVersions

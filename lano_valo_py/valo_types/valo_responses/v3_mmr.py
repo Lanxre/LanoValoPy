@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -24,29 +24,29 @@ class LeaderboardPlacement(BaseModel):
 
 
 class CurrentMmrModelV3(BaseModel):
-    tier: TierMmrModelV3
+    tier: Optional[TierMmrModelV3]
     rr: int
-    last_change: str
+    last_change: int
     elo: int
-    game_need_for_rating: int
+    games_needed_for_rating: int
     rank_protection_shields: int
-    leaderboard_placement: LeaderboardPlacement
+    leaderboard_placement: Optional[LeaderboardPlacement]
 
 
 class SeasonalMmrModelV3(BaseModel):
-    season: SeasonMmrModelV3
+    season: Optional[SeasonMmrModelV3]
     wins: int
     games: int
-    end_tier: TierMmrModelV3
-    ranging_schema: int
-    leaderboard_placement: LeaderboardPlacement
+    end_tier: Optional[TierMmrModelV3]
+    ranking_schema: str
+    leaderboard_placement: Optional[LeaderboardPlacement]
     act_wins: List[TierMmrModelV3]
 
 
 class PeakMmrModelV3(BaseModel):
     season: SeasonMmrModelV3
     rr: int
-    ranking_schema: int
+    ranking_schema: str
     tier: TierMmrModelV3
 
 class MmrModelV3(BaseModel):

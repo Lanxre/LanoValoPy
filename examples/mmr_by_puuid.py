@@ -18,7 +18,7 @@ async def main():
 
     # Example: Get MMR by PUUID
     mmr_options = GetMMRByPUUIDFetchOptionsModel(
-        version=MMRVersions.v2,
+        version=MMRVersions.v3,
         region=Regions.eu,
         puuid='e4122af3-fa8c-582c-847d-42a3868925cd',
     )

@@ -36,7 +36,6 @@ from .valo_types.valo_models import (
     GetStatusFetchOptionsModel,
     GetStoredMatchesByPUUIDResponseModel,
     GetStoredMatchesOptionsModel,
-    GetStoreOffersFetchOptionsModel,
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
 )
@@ -61,6 +60,8 @@ from .valo_types.valo_responses import (
     MapModelResponse,
     MatchResponseModel,
     MMRHistoryByPuuidResponseModelV1,
+    MMRHistoryModelV2,
+    MmrModelV3,
     MMRResponseModel,
     PlayerCardModelResponse,
     PlayerTitleModelResponse,
@@ -68,8 +69,6 @@ from .valo_types.valo_responses import (
     PremierTeamResponseModel,
     StatusDataResponseModel,
     StoredMatchResponseModel,
-    StoreOffersResponseModelV1,
-    StoreOffersResponseModelV2,
     TotalPlayerStatsModel,
     V1StoredMmrHistoryResponse,
     WeaponResponseModel,
@@ -134,7 +133,7 @@ class LanoValoPy:
 
     async def get_mmr_by_puuid(
         self, options: GetMMRByPUUIDFetchOptionsModel
-    ) -> MMRResponseModel:
+    ) -> MMRResponseModel | MmrModelV3:
         """
         Gets the MMR information for a given puuid.
 
@@ -213,7 +212,7 @@ class LanoValoPy:
 
     async def get_mmr_history(
         self, options: GetMMRHistoryFetchOptionsModel
-    ) -> MMRResponseModel:
+    ) -> MMRResponseModel | MMRHistoryModelV2:
         """
         Returns the latest competitive games with RR movement for each game
 
@@ -230,7 +229,7 @@ class LanoValoPy:
     ) -> APIResponseModel:
         return await self.henrik_api.get_lifetime_mmr_history(options)
 
-    async def get_mmr(self, options: GetMMRFetchOptionsModel) -> MMRResponseModel:
+    async def get_mmr(self, options: GetMMRFetchOptionsModel) -> MMRResponseModel | MmrModelV3:
         """
         Gets the MMR information for a given name and tag.
 
@@ -272,23 +271,6 @@ class LanoValoPy:
         self, options: GetFeaturedItemsFetchOptionsModel
     ) -> APIResponseModel | FeaturedBundleResponseModelV1 | List[BundleResponseModelV2]:
         return await self.henrik_api.get_featured_items(options)
-
-    async def get_offers(
-        self, options: GetStoreOffersFetchOptionsModel
-    ) -> StoreOffersResponseModelV1 | StoreOffersResponseModelV2:
-        """
-        Gets the store offers.
-
-        Args:
-            options (GetStoreOffersFetchOptionsModel): The options for the request.
-
-        Returns:
-            StoreOffersResponseModelV1: The store offers.
-
-        Raises:
-            ValueError: If the version is invalid.
-        """
-        return await self.henrik_api.get_offers(options)
 
     async def get_version(
         self, options: GetVersionFetchOptionsModel
@@ -529,10 +511,12 @@ class LanoValoPy:
         self,
         player_options: AccountFetchOptionsModelV2,
         match_options: GetMatchFetchOptionsModel,
-    )-> TotalPlayerStatsModel:
+    ) -> TotalPlayerStatsModel:
         try:
             match_data = await self.get_match(match_options)
-            stats = await self.game_stats.get_player_match_stats(player_options, match_data)
+            stats = await self.game_stats.get_player_match_stats(
+                player_options, match_data
+            )
             return stats
         except UnauthorizedError:
             logger.error(

@@ -9,6 +9,9 @@ from .valo_types.valo_enums import (
     FeaturedItemsVersion,
     LeaderboardVersions,
     MMRVersions,
+    MMRHistoryVersions,
+    MatchListVersion,
+    MatchVersion,
 )
 from .valo_types.valo_models import (
     AccountFetchByPUUIDOptionsModel,
@@ -59,6 +62,9 @@ from .valo_types.valo_responses import (
     StoredMatchResponseModel,
     V1StoredMmrHistoryResponse,
     MmrModelV3,
+    MMRHistoryModelV2,
+    HistoryMMRV2,
+    MatchDataV4,
 )
 
 logger = LoggerBuilder("LanoValoPy").add_stream_handler().build()
@@ -131,7 +137,7 @@ class HenrikAPI(BasedApi):
 
     async def get_mmr_by_puuid(
         self, options: GetMMRByPUUIDFetchOptionsModel
-    ) -> MMRResponseModel:
+    ) -> MMRResponseModel | MmrModelV3:
         """
         Gets the MMR information for a given puuid.
 
@@ -145,16 +151,26 @@ class HenrikAPI(BasedApi):
         query = self._query({"filter": options.filter})
         encoded_region = quote(options.region)
         encoded_version = quote(options.version)
-        url = f"{self.BASE_URL}/{encoded_version}/by-puuid/mmr/{encoded_region}/{options.puuid}"
+
+        if encoded_version == MMRVersions.v3.value:
+            url = f"{self.BASE_URL}/{encoded_version}/by-puuid/mmr/{encoded_region}/pc/{options.puuid}"
+        else:
+            url = f"{self.BASE_URL}/{encoded_version}/by-puuid/mmr/{encoded_region}/{options.puuid}"
+
         if query:
             url += f"?{query}"
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return MMRResponseModel(**result.data)
+
+        match encoded_version:
+            case MMRVersions.v3.value:
+                return MmrModelV3(**result.data)
+            case _:
+                return MMRResponseModel(**result.data)
 
     async def get_mmr_history_by_puuid(
         self, options: GetMMRHistoryByPUUIDFetchOptionsModel
-    ) -> MMRHistoryByPuuidResponseModelV1:
+    ) -> MMRHistoryByPuuidResponseModelV1 | MMRHistoryModelV2:
         """
         Gets the MMR history for a given puuid.
 
@@ -162,29 +178,52 @@ class HenrikAPI(BasedApi):
             options (GetMMRHistoryByPUUIDFetchOptionsModel): The options for the request.
 
         Returns:
-            MMRHistoryByPuuidResponseModelV1: The MMR history.
+            MMRHistoryByPuuidResponseModelV1 | MMRHistoryModelV2: The MMR history.
         """
         self._validate(options.model_dump())
-        url = (
-            f"{self.BASE_URL}/v1/by-puuid/mmr-history/{options.region}/{options.puuid}"
-        )
+
+        if options.version is MMRHistoryVersions.v1:
+            url = f"{self.BASE_URL}/{options.version}/by-puuid/mmr-history/{options.region}/{options.puuid}"
+        else:
+            url = f"{self.BASE_URL}/{options.version}/by-puuid/mmr-history/{options.region}/pc/{options.puuid}"
+
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return MMRHistoryByPuuidResponseModelV1(**result.data)
+
+        match options.version:
+            case MMRHistoryVersions.v1:
+                return MMRHistoryByPuuidResponseModelV1(**result.data)
+            case MMRHistoryVersions.v2:
+                return MMRHistoryModelV2(**result.data)
+            case _:
+                raise ValueError("Invalid version")
 
     async def get_matches_by_puuid(
         self, options: GetMatchesByPUUIDFetchOptionsModel
-    ) -> List[MatchResponseModel]:
+    ) -> List[MatchResponseModel] | List[MatchDataV4]:
         self._validate(options.model_dump())
         query = self._query(
             {"filter": options.filter, "map": options.map, "size": options.size}
         )
-        url = f"{self.BASE_URL}/v3/by-puuid/matches/{options.region}/{options.puuid}"
+
+        if options.version == MatchListVersion.v3:
+            url = f"{self.BASE_URL}/{options.version}/by-puuid/matches/{options.region}/{options.puuid}"
+        else:
+            url = f"{self.BASE_URL}/{options.version}/by-puuid/matches/{options.region}/pc/{options.puuid}"
+
         if query:
             url += f"?{query}"
+
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [MatchResponseModel(**match) for match in result.data]
+
+        match options.version:
+            case MatchListVersion.v3:
+                return [MatchResponseModel(**match) for match in result.data]
+            case MatchListVersion.v4:
+                return [MatchDataV4(**match) for match in result.data]
+        
+        return []
 
     async def get_content(
         self, options: GetContentFetchOptionsModel
@@ -258,7 +297,7 @@ class HenrikAPI(BasedApi):
 
     async def get_matches(
         self, options: GetMatchesFetchOptionsModel
-    ) -> List[MatchResponseModel]:
+    ) -> List[MatchResponseModel] | List[MatchDataV4]:
         self._validate(options.model_dump())
         query = self._query(
             {"filter": options.filter, "map": options.map, "size": options.size}
@@ -267,16 +306,26 @@ class HenrikAPI(BasedApi):
         encoded_tag = quote(options.tag)
         encoded_region = quote(options.region)
 
-        url = (
-            f"{self.BASE_URL}/v3/matches/{encoded_region}/{encoded_name}/{encoded_tag}"
-        )
+        if options.version == MatchListVersion.v3:
+            url = f"{self.BASE_URL}/{options.version}/matches/{encoded_region}/{encoded_name}/{encoded_tag}"
+        else:
+            url = f"{self.BASE_URL}/{options.version}/matches/{encoded_region}/pc/{encoded_name}/{encoded_tag}"
+
         if query:
             url += f"?{query}"
+
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [MatchResponseModel(**match) for match in result.data]
+        
+        match options.version:
+            case MatchListVersion.v3:
+                return [MatchResponseModel(**match) for match in result.data]
+            case MatchListVersion.v4:
+                return [MatchDataV4(**match) for match in result.data]
+        
+        return []
 
-    async def get_match(self, options: GetMatchFetchOptionsModel) -> MatchResponseModel:
+    async def get_match(self, options: GetMatchFetchOptionsModel) -> MatchResponseModel | MatchDataV4:
         """
         Gets the match data for the given match id.
 
@@ -287,18 +336,27 @@ class HenrikAPI(BasedApi):
             MatchResponseModel: The match data.
         """
         self._validate(options.model_dump())
-        url = f"{self.BASE_URL}/v2/match/{options.match_id}"
+        
+        if options.version == MatchVersion.v4:
+            url = f"{self.BASE_URL}/{options.version}/matches/{options.region}/{options.match_id}"
+        else:
+            url = f"{self.BASE_URL}/{options.version}/matches/{options.match_id}"
+
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
         try:
-            return MatchResponseModel(**result.data)
+            match options.version:
+                case MatchVersion.v3:
+                    return MatchResponseModel(**result.data)
+                case MatchVersion.v4:
+                    return MatchDataV4(**result.data)
         except TypeError:
             logger.error(result.data)
             raise UnauthorizedError("Unauthorized", result)
 
     async def get_mmr_history(
         self, options: GetMMRHistoryFetchOptionsModel
-    ) -> MMRResponseModel:
+    ) -> MMRResponseModel | MMRHistoryModelV2:
         """
         Returns the latest competitive games with RR movement for each game
 
@@ -306,16 +364,28 @@ class HenrikAPI(BasedApi):
             options (GetMMRHistoryFetchOptionsModel): The options for the request.
 
         Returns:
-            MMRResponseModel: The MMR history.
+            MMRResponseModel | MMRHistoryModelV2: The MMR history.
         """
         self._validate(options.model_dump())
         encoded_name = quote(options.name)
         encoded_tag = quote(options.tag)
         encoded_region = quote(options.region)
-        url = f"{self.BASE_URL}/v1/mmr-history/{encoded_region}/{encoded_name}/{encoded_tag}"
+        encoded_version = quote(options.version)
+
+        if encoded_version == MMRHistoryVersions.v1.value:
+            url = f"{self.BASE_URL}/{encoded_version}/mmr-history/{encoded_region}/{encoded_name}/{encoded_tag}"
+        else:
+            url = f"{self.BASE_URL}/{encoded_version}/mmr-history/{encoded_region}/pc/{encoded_name}/{encoded_tag}"
+
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return MMRResponseModel(**result.data)
+        match options.version:
+            case MMRHistoryVersions.v1:
+                return MMRResponseModel(**result.data)
+            case MMRHistoryVersions.v2:
+                return MMRHistoryModelV2(**result.data)
+            case _:
+                raise ValueError(f"Invalid version: {options.version}")
 
     async def get_lifetime_mmr_history(
         self, options: GetLifetimeMMRHistoryFetchOptionsModel
@@ -330,7 +400,9 @@ class HenrikAPI(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         return await self._fetch(fetch_options)
 
-    async def get_mmr(self, options: GetMMRFetchOptionsModel) -> MMRResponseModel:
+    async def get_mmr(
+        self, options: GetMMRFetchOptionsModel
+    ) -> MMRResponseModel | MmrModelV3:
         """
         Gets the MMR information for a given name and tag.
 
@@ -575,7 +647,7 @@ class HenrikAPI(BasedApi):
 
     async def get_stored_mmr_history(
         self, options: GetMMRStoredHistoryOptionsModel
-    ) -> List[V1StoredMmrHistoryResponse]:
+    ) -> List[V1StoredMmrHistoryResponse] | List[HistoryMMRV2]:
         self._validate(options.model_dump())
 
         if options.version is MMRVersions.v1:
@@ -583,7 +655,6 @@ class HenrikAPI(BasedApi):
         else:
             url = f"{self.BASE_URL}/{options.version.value}/stored-mmr-history/{options.region.value}/{options.platform}/{options.name}/{options.tag}"
 
-        url = f"{self.BASE_URL}/{options.version.value}/stored-mmr-history/{options.region.value}/{options.name}/{options.tag}"
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
 
@@ -591,7 +662,7 @@ class HenrikAPI(BasedApi):
             case MMRVersions.v1:
                 return [V1StoredMmrHistoryResponse(**x) for x in result.data]
             case MMRVersions.v2:
-                return [V1StoredMmrHistoryResponse(**x) for x in result.data]
+                return [HistoryMMRV2(**x) for x in result.data]
             case _:
                 raise ValueError("Invalid version")
 
@@ -599,7 +670,7 @@ class HenrikAPI(BasedApi):
 
     async def get_stored_mmr_history_by_puuid(
         self, options: GetMMRStoredHistoryByPUUIDResponseModel
-    ) -> List[V1StoredMmrHistoryResponse]:
+    ) -> List[V1StoredMmrHistoryResponse] | List[HistoryMMRV2]:
         self._validate(options.model_dump())
 
         if options.version is MMRVersions.v1:
@@ -614,7 +685,7 @@ class HenrikAPI(BasedApi):
             case MMRVersions.v1:
                 return [V1StoredMmrHistoryResponse(**x) for x in result.data]
             case MMRVersions.v2:
-                return [V1StoredMmrHistoryResponse(**x) for x in result.data]
+                return [HistoryMMRV2(**x) for x in result.data]
             case _:
                 raise ValueError("Invalid version")
 
