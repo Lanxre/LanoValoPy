@@ -6,8 +6,6 @@ from .v1_stored_mmr_history import * # noqa
 from .v1_mmr_history import *  # noqa
 from .v1_website import *  # noqa
 from .v1_version import *  # noqa
-from .v1_store_offers import *  # noqa
-from .v2_store_offers import *  # noqa
 from .v1_store_featured import *  # noqa
 from .v2_store_featured import *  # noqa
 from .v1_status import *  # noqa
@@ -25,3 +23,9 @@ from .v1_game_weapons import * # noqa
 from .v1_game_border_levels import * # noqa
 from .v1_game_gear import * # noqa
 from .v1_stored_matches import * # noqa
+from .v3_mmr import MmrModelV3
+
+
+__all__ = [
+    "MmrModelV3",
+]

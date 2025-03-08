@@ -34,7 +34,6 @@ from .valo_types.valo_models import (
     GetStatusFetchOptionsModel,
     GetStoredMatchesByPUUIDResponseModel,
     GetStoredMatchesOptionsModel,
-    GetStoreOffersFetchOptionsModel,
     GetVersionFetchOptionsModel,
     GetWebsiteFetchOptionsModel,
 )
@@ -58,9 +57,8 @@ from .valo_types.valo_responses import (
     PremierTeamResponseModel,
     StatusDataResponseModel,
     StoredMatchResponseModel,
-    StoreOffersResponseModelV1,
-    StoreOffersResponseModelV2,
     V1StoredMmrHistoryResponse,
+    MmrModelV3,
 )
 
 logger = LoggerBuilder("LanoValoPy").add_stream_handler().build()
@@ -348,12 +346,22 @@ class HenrikAPI(BasedApi):
         encoded_version = quote(options.version)
         encoded_name = quote(options.name)
         encoded_tag = quote(options.tag)
-        url = f"{self.BASE_URL}/{encoded_version}/mmr/{encoded_region}/{encoded_name}/{encoded_tag}"
+
+        if encoded_version == MMRVersions.v3.value:
+            url = f"{self.BASE_URL}/{encoded_version}/mmr/{encoded_region}/pc/{encoded_name}/{encoded_tag}"
+        else:
+            url = f"{self.BASE_URL}/{encoded_version}/mmr/{encoded_region}/{encoded_name}/{encoded_tag}"
+
         if query:
             url += f"?{query}"
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return MMRResponseModel(**result.data)
+
+        match encoded_version:
+            case MMRVersions.v3.value:
+                return MmrModelV3(**result.data)
+            case _:
+                return MMRResponseModel(**result.data)
 
     async def get_raw_data(self, options: GetRawFetchOptionsModel) -> APIResponseModel:
         """
@@ -409,35 +417,6 @@ class HenrikAPI(BasedApi):
                 raise ValueError(f"Invalid version: {encoded_version}")
 
         return await self._fetch(fetch_options)
-
-    async def get_offers(
-        self, options: GetStoreOffersFetchOptionsModel
-    ) -> StoreOffersResponseModelV1 | StoreOffersResponseModelV2:
-        """
-        Gets the store offers.
-
-        Args:
-            options (GetStoreOffersFetchOptionsModel): The options for the request.
-
-        Returns:
-            StoreOffersResponseModelV1: The store offers.
-
-        Raises:
-            ValueError: If the version is invalid.
-        """
-        self._validate(options.model_dump())
-        encoded_version = quote(options.version)
-        url = f"{self.BASE_URL}/{encoded_version}/store-offers"
-        fetch_options = FetchOptionsModel(url=url)
-        result = await self._fetch(fetch_options)
-
-        match encoded_version:
-            case FeaturedItemsVersion.v1:
-                return StoreOffersResponseModelV1(**result.data)
-            case FeaturedItemsVersion.v2:
-                return [StoreOffersResponseModelV2(**x) for x in result.data]
-            case _:
-                raise ValueError(f"Invalid version: {encoded_version}")
 
     async def get_version(
         self, options: GetVersionFetchOptionsModel
