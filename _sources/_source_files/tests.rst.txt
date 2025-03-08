@@ -1,0 +1,41 @@
+tests package
+=============
+
+Submodules
+----------
+
+tests.config module
+-------------------
+
+.. automodule:: tests.config
+   :autosummary:
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+tests.test\_game\_content module
+--------------------------------
+
+.. automodule:: tests.test_game_content
+   :autosummary:
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+tests.test\_henrik\_api module
+------------------------------
+
+.. automodule:: tests.test_henrik_api
+   :autosummary:
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: tests
+   :autosummary:
+   :members:
+   :show-inheritance:
+   :undoc-members:
