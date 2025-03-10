@@ -54,10 +54,12 @@ from .valo_types.valo_responses import (
     EsportMatchDataResponseModel,
     FeaturedBundleResponseModelV1,
     GearModelResponse,
+    HistoryMMRV2,
     LeaderboardDataResponseModelV2,
     LeaderboardDataResponseModelV3,
     LevelGameWeaponResponseModel,
     MapModelResponse,
+    MatchDataV4,
     MatchResponseModel,
     MMRHistoryByPuuidResponseModelV1,
     MMRHistoryModelV2,
@@ -147,7 +149,7 @@ class LanoValoPy:
 
     async def get_mmr_history_by_puuid(
         self, options: GetMMRHistoryByPUUIDFetchOptionsModel
-    ) -> MMRHistoryByPuuidResponseModelV1:
+    ) -> MMRHistoryByPuuidResponseModelV1 | MMRHistoryModelV2:
         """
         Gets the MMR history for a given puuid.
 
@@ -155,13 +157,13 @@ class LanoValoPy:
             options (GetMMRHistoryByPUUIDFetchOptionsModel): The options for the request.
 
         Returns:
-            MMRHistoryByPuuidResponseModelV1: The MMR history.
+            MMRHistoryByPuuidResponseModelV1: The MMR history | MMRHistoryModelV2.
         """
         return await self.henrik_api.get_mmr_history_by_puuid(options)
 
     async def get_matches_by_puuid(
         self, options: GetMatchesByPUUIDFetchOptionsModel
-    ) -> List[MatchResponseModel]:
+    ) -> List[MatchResponseModel] | List[MatchDataV4]:
         return await self.henrik_api.get_matches_by_puuid(options)
 
     async def get_content(
@@ -195,10 +197,10 @@ class LanoValoPy:
 
     async def get_matches(
         self, options: GetMatchesFetchOptionsModel
-    ) -> List[MatchResponseModel]:
+    ) -> List[MatchResponseModel] | List[MatchDataV4]:
         return await self.henrik_api.get_matches(options)
 
-    async def get_match(self, options: GetMatchFetchOptionsModel) -> MatchResponseModel:
+    async def get_match(self, options: GetMatchFetchOptionsModel) -> MatchResponseModel | MatchDataV4:
         """
         Gets the match data for the given match id.
 
@@ -229,7 +231,9 @@ class LanoValoPy:
     ) -> APIResponseModel:
         return await self.henrik_api.get_lifetime_mmr_history(options)
 
-    async def get_mmr(self, options: GetMMRFetchOptionsModel) -> MMRResponseModel | MmrModelV3:
+    async def get_mmr(
+        self, options: GetMMRFetchOptionsModel
+    ) -> MMRResponseModel | MmrModelV3:
         """
         Gets the MMR information for a given name and tag.
 
@@ -489,12 +493,12 @@ class LanoValoPy:
 
     async def get_stored_mmr_history(
         self, options: GetMMRStoredHistoryOptionsModel
-    ) -> List[V1StoredMmrHistoryResponse]:
+    ) -> List[V1StoredMmrHistoryResponse] | List[HistoryMMRV2]:
         return await self.henrik_api.get_stored_mmr_history(options)
 
     async def get_stored_mmr_history_by_puuid(
         self, options: GetMMRStoredHistoryByPUUIDResponseModel
-    ) -> List[V1StoredMmrHistoryResponse]:
+    ) -> List[V1StoredMmrHistoryResponse] | List[HistoryMMRV2]:
         return await self.henrik_api.get_stored_mmr_history_by_puuid(options)
 
     async def get_stored_matches(
