@@ -13,10 +13,10 @@ from lano_valo_py import LanoValoPy
 
 
 async def main():
-    api_client = LanoValoPy(henrik_token="HDEV-d9b7fa0f-adcf-4367-a92a-0625f964ab49")
+    api_client = LanoValoPy(henrik_token="YOUR_TOKEN_HERE")
 
     account = await api_client.get_account(
-        AccountFetchOptionsModel(name="fofifkifirom", tag="arbuz",version=AccountVersion.v2))
+        AccountFetchOptionsModel(name="Lanore", tag="evil",version=AccountVersion.v2))
 
     options = GetMMRHistoryByPUUIDFetchOptionsModel(
         version=MMRVersions.v2,
