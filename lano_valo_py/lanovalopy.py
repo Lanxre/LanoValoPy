@@ -75,6 +75,7 @@ from .valo_types.valo_responses import (
     V1StoredMmrHistoryResponse,
     WeaponResponseModel,
     WeaponSkinGameWeaponResponseModel,
+    DayMMRStats,
 )
 
 logger = LoggerBuilder("HenrikAPI").add_stream_handler().build()
@@ -526,3 +527,14 @@ class LanoValoPy:
             logger.error(
                 "Unauthorized error occurred while fetching match data. Please check your API key and try again."
             )
+
+    async def get_player_day_wins_loses_stats(
+        self, options: GetMMRHistoryByPUUIDFetchOptionsModel
+    ) -> DayMMRStats:
+        
+        if options.puuid is None and options.version:
+            pass
+
+        mmr_history: MMRHistoryModelV2 = await self.get_mmr_history_by_puuid(options=options)
+        data = await self.game_stats.get_day_win_lose(mmr_history.history)
+        return data

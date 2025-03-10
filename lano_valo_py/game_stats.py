@@ -1,7 +1,10 @@
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from .valo_types.valo_models import AccountFetchOptionsModelV2
 from .valo_types.valo_responses import (
+    DayMMRStats,
+    HistoryMMRV2,
     MatchKillsResponseModel,
     MatchPlayerModel,
     MatchResponseModel,
@@ -16,7 +19,7 @@ class ValoGameStats:
         self,
         player_options: AccountFetchOptionsModelV2,
         match: MatchResponseModel,
-    ):
+    ) -> TotalPlayerStatsModel:
         if not player_options.puuid and not (player_options.name or player_options.tag):
             return
 
@@ -34,7 +37,68 @@ class ValoGameStats:
 
         stats = await self.calculate_stats(match.rounds, player, total_rounds)
         duels = await self.calculate_duels(match.kills)
-        return TotalPlayerStatsModel(stats=stats, duels=duels[f'{player.name}#{player.tag}'])
+        return TotalPlayerStatsModel(
+            stats=stats, duels=duels[f"{player.name}#{player.tag}"]
+        )
+
+    async def get_day_win_lose(
+        self, mmr_data: List[HistoryMMRV2]
+    ) -> Optional[DayMMRStats]:
+        if not mmr_data:
+            return
+
+        today = datetime.now(timezone.utc).date()
+        day_matches = list(
+            filter(
+                lambda obj: datetime.fromisoformat(
+                    obj.date.replace("Z", "+00:00")
+                ).date()
+                == today,
+                mmr_data,
+            )
+        )
+
+        if not day_matches:
+            return
+
+        loses_day_matches = list(
+            filter(
+                lambda obj: datetime.fromisoformat(
+                    obj.date.replace("Z", "+00:00")
+                ).date()
+                == today
+                and obj.last_change < 0,
+                mmr_data,
+            )
+        )
+        wins_day_matches = list(
+            filter(
+                lambda obj: datetime.fromisoformat(
+                    obj.date.replace("Z", "+00:00")
+                ).date()
+                == today
+                and obj.last_change > 0,
+                mmr_data,
+            )
+        )
+        sorted_data = sorted(
+            day_matches,
+            key=lambda obj: datetime.fromisoformat(obj.date.replace("Z", "+00:00")),
+        )
+        
+        mmr_dif = sorted_data[-1].elo - sorted_data[0].elo
+        win_count = len(wins_day_matches)
+        lose_count = len(loses_day_matches)
+        win_percent = win_count / (win_count + lose_count)
+        total_mmr = sorted_data[-1].elo
+
+        return DayMMRStats(
+            mmr=total_mmr,
+            mmr_difference=mmr_dif,
+            wins=win_count,
+            losses=lose_count,
+            wins_percentage=win_percent,
+        )
 
     def find_player_by_puuid(
         self, match_data: MatchResponseModel, puuid: Optional[str] = None

@@ -183,13 +183,13 @@ class HenrikAPI(BasedApi):
         self._validate(options.model_dump())
 
         if options.version is MMRHistoryVersions.v1:
-            url = f"{self.BASE_URL}/{options.version}/by-puuid/mmr-history/{options.region}/{options.puuid}"
+            url = f"{self.BASE_URL}/{options.version.value}/by-puuid/mmr-history/{options.region.value}/{options.puuid}"
         else:
-            url = f"{self.BASE_URL}/{options.version}/by-puuid/mmr-history/{options.region}/pc/{options.puuid}"
+            url = f"{self.BASE_URL}/{options.version.value}/by-puuid/mmr-history/{options.region.value}/pc/{options.puuid}"
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-
+        
         match options.version:
             case MMRHistoryVersions.v1:
                 return MMRHistoryByPuuidResponseModelV1(**result.data)
