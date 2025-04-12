@@ -3,20 +3,20 @@ from urllib.parse import quote
 
 from pydantic import ValidationError
 
-from .utils.responce_helper import ResponceHelper
-
 from .based_api import BasedApi
 from .exeptions import UnauthorizedError
 from .lanologger import LoggerBuilder
+from .utils.const import VALIDATE_DATA_MESSAGE_ERROR
+from .utils.responce_helper import ResponceHelper
 from .valo_types.valo_enums import (
     AccountVersion,
     FeaturedItemsVersion,
     LeaderboardVersions,
+    Locales,
     MatchListVersion,
     MatchVersion,
     MMRHistoryVersions,
     MMRVersions,
-    Locales,
 )
 from .valo_types.valo_models import (
     AccountFetchByPUUIDOptionsModel,
@@ -88,7 +88,7 @@ class HenrikAPI(BasedApi):
         self.headers = {"User-Agent": "unofficial-valorant-api/python/1.0"}
         if self.token:
             self.headers["Authorization"] = self.token
-        
+
         self.henrik_helper = ResponceHelper()
 
     async def get_account(
@@ -122,7 +122,7 @@ class HenrikAPI(BasedApi):
                 case _:
                     raise ValueError("Invalid version")
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_account_by_puuid(
         self, options: AccountFetchByPUUIDOptionsModel
@@ -146,7 +146,7 @@ class HenrikAPI(BasedApi):
         try:
             return AccountResponseModelV1.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_mmr_by_puuid(
         self, options: GetMMRByPUUIDFetchOptionsModel
@@ -182,7 +182,7 @@ class HenrikAPI(BasedApi):
                 case _:
                     return MMRResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_mmr_history_by_puuid(
         self, options: GetMMRHistoryByPUUIDFetchOptionsModel
@@ -215,7 +215,7 @@ class HenrikAPI(BasedApi):
                 case _:
                     raise ValueError("Invalid version")
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_matches_by_puuid(
         self, options: GetMatchesByPUUIDFetchOptionsModel
@@ -247,7 +247,7 @@ class HenrikAPI(BasedApi):
                 case MatchListVersion.v4:
                     return [MatchDataV4.model_validate(match) for match in matches]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_content(
         self, options: GetContentFetchOptionsModel
@@ -353,7 +353,9 @@ class HenrikAPI(BasedApi):
         try:
             match options.version:
                 case MatchListVersion.v3:
-                    return [MatchResponseModel.model_validate(match) for match in matches]
+                    return [
+                        MatchResponseModel.model_validate(match) for match in matches
+                    ]
                 case MatchListVersion.v4:
                     return [MatchDataV4.model_validate(**match) for match in matches]
         except ValidationError as e:
@@ -390,10 +392,9 @@ class HenrikAPI(BasedApi):
                     raise TypeError("Option support v3 or v4")
         except TypeError:
             logger.error(result.data)
-            raise UnauthorizedError("Unauthorized", result) 
+            raise UnauthorizedError("Unauthorized", result)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
-        
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_mmr_history(
         self, options: GetMMRHistoryFetchOptionsModel
@@ -429,7 +430,7 @@ class HenrikAPI(BasedApi):
                 case _:
                     raise ValueError(f"Invalid version: {options.version}")
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_lifetime_mmr_history(
         self, options: GetLifetimeMMRHistoryFetchOptionsModel
@@ -473,14 +474,14 @@ class HenrikAPI(BasedApi):
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
 
-        try: 
+        try:
             match encoded_version:
                 case MMRVersions.v3.value:
                     return MmrModelV3.model_validate(result.data)
                 case _:
                     return MMRResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_raw_data(self, options: GetRawFetchOptionsModel) -> APIResponseModel:
         """
@@ -519,7 +520,7 @@ class HenrikAPI(BasedApi):
         try:
             return StatusDataResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_featured_items(
         self, options: GetFeaturedItemsFetchOptionsModel
@@ -540,7 +541,7 @@ class HenrikAPI(BasedApi):
                 case _:
                     raise ValueError(f"Invalid version: {encoded_version}")
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_version(
         self, options: GetVersionFetchOptionsModel
@@ -559,11 +560,11 @@ class HenrikAPI(BasedApi):
         url = f"{self.BASE_URL}/v1/version/{encoded_region}"
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        
+
         try:
             return BuildGameInfoResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_website(
         self, options: GetWebsiteFetchOptionsModel
@@ -589,7 +590,7 @@ class HenrikAPI(BasedApi):
             data = self.henrik_helper.data_convertor(result)
             return [CommunityNewsResponseModel.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_crosshair(self, options: GetCrosshairFetchOptionsModel) -> BinaryData:
         """
@@ -632,11 +633,11 @@ class HenrikAPI(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        try: 
+        try:
             data = self.henrik_helper.data_convertor(result)
             return [EsportMatchDataResponseModel.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_premier_team(
         self, options: GetPremierTeamFetchOptionsModel
@@ -657,7 +658,7 @@ class HenrikAPI(BasedApi):
         try:
             return PremierTeamResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_premier_team_history(
         self, options: GetPremierTeamFetchOptionsModel
@@ -680,7 +681,7 @@ class HenrikAPI(BasedApi):
         try:
             return PremierLeagueMatchesWrapperResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_premier_team_by_id(self, team_id: str) -> PremierTeamResponseModel:
         """
@@ -700,7 +701,7 @@ class HenrikAPI(BasedApi):
         try:
             return PremierTeamResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_premier_team_history_by_id(
         self, team_id: str
@@ -718,11 +719,11 @@ class HenrikAPI(BasedApi):
         url = f"{self.BASE_URL}/v1/premier/{team_id}/history"
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        
+
         try:
             return PremierLeagueMatchesWrapperResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_stored_mmr_history(
         self, options: GetMMRStoredHistoryOptionsModel
@@ -746,7 +747,7 @@ class HenrikAPI(BasedApi):
                 case _:
                     raise ValueError(f"Invalid version: {options.version}")
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_stored_mmr_history_by_puuid(
         self, options: GetMMRStoredHistoryByPUUIDResponseModel
@@ -770,8 +771,7 @@ class HenrikAPI(BasedApi):
                 case _:
                     raise ValueError("Invalid version")
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
-        
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_stored_matches(
         self, options: GetStoredMatchesOptionsModel
@@ -779,12 +779,14 @@ class HenrikAPI(BasedApi):
         self._validate(options.model_dump())
         url = f"{self.BASE_URL}/v1/stored-matches/{options.region.value}/{options.name}/{options.tag}"
 
-        query = self._query({
-            "page": (f.page if (f := options.filter) else ""),
-            "size": (f.size if (f := options.filter) else ""),
-            "mode": options.mode.value if options.mode else "",
-            "map": options.map.value if options.map else ""
-        })
+        query = self._query(
+            {
+                "page": (f.page if (f := options.filter) else ""),
+                "size": (f.size if (f := options.filter) else ""),
+                "mode": options.mode.value if options.mode else "",
+                "map": options.map.value if options.map else "",
+            }
+        )
 
         if query:
             url += f"?{query}"
@@ -799,7 +801,7 @@ class HenrikAPI(BasedApi):
             logger.error(result.data)
             raise UnauthorizedError("Unauthorized", result)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_stored_matches_by_puuid(
         self, options: GetStoredMatchesByPUUIDResponseModel
@@ -807,12 +809,14 @@ class HenrikAPI(BasedApi):
         self._validate(options.model_dump())
         url = f"{self.BASE_URL}/v1/by-puuid/stored-matches/{options.region.value}/{options.puuid}"
 
-        query = self._query({
-            "page": (f.page if (f := options.filter) else ""),
-            "size": (f.size if (f := options.filter) else ""),
-            "mode": options.mode.value if options.mode else "",
-            "map": options.map.value if options.map else ""
-        })
+        query = self._query(
+            {
+                "page": (f.page if (f := options.filter) else ""),
+                "size": (f.size if (f := options.filter) else ""),
+                "mode": options.mode.value if options.mode else "",
+                "map": options.map.value if options.map else "",
+            }
+        )
 
         if query:
             url += f"?{query}"
@@ -827,4 +831,4 @@ class HenrikAPI(BasedApi):
             logger.error(result.data)
             raise UnauthorizedError("Unauthorized", result)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e

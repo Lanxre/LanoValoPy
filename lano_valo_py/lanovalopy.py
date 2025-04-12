@@ -5,6 +5,7 @@ from .game_api import GameApi
 from .game_stats import ValoGameStats
 from .henrik_api import HenrikAPI
 from .lanologger import LoggerBuilder
+from .utils.const import TOKEN_MESSAGE_REQUERIED
 from .valo_types.valo_models import (
     AccountFetchByPUUIDOptionsModel,
     AccountFetchOptionsModel,
@@ -51,6 +52,7 @@ from .valo_types.valo_responses import (
     ChromaGameWeaponResponseModel,
     CommunityNewsResponseModel,
     ContentResponseModel,
+    DayMMRStats,
     EsportMatchDataResponseModel,
     FeaturedBundleResponseModelV1,
     GearModelResponse,
@@ -75,7 +77,6 @@ from .valo_types.valo_responses import (
     V1StoredMmrHistoryResponse,
     WeaponResponseModel,
     WeaponSkinGameWeaponResponseModel,
-    DayMMRStats,
 )
 
 logger = LoggerBuilder("HenrikAPI").add_stream_handler().build()
@@ -94,9 +95,7 @@ class LanoValoPy:
         self.game_stats = game_stats or ValoGameStats()
 
         if henrik_token is None:
-            logger.info(
-                "Henrik token not provided. LanoValoPy will not be able to make some requests to the Henrik API."
-            )
+            logger.info(TOKEN_MESSAGE_REQUERIED)
 
     @property
     def get_game_data(self) -> HenrikAPI:
@@ -201,7 +200,9 @@ class LanoValoPy:
     ) -> List[MatchResponseModel] | List[MatchDataV4]:
         return await self.henrik_api.get_matches(options)
 
-    async def get_match(self, options: GetMatchFetchOptionsModel) -> MatchResponseModel | MatchDataV4:
+    async def get_match(
+        self, options: GetMatchFetchOptionsModel
+    ) -> MatchResponseModel | MatchDataV4:
         """
         Gets the match data for the given match id.
 
@@ -521,7 +522,9 @@ class LanoValoPy:
             match_data = await self.get_match(match_options)
 
             if not isinstance(match_data, MatchResponseModel):
-                raise ValueError("get_player_match_stats - now work only with MatchVersion.v3")
+                raise ValueError(
+                    "get_player_match_stats - now work only with MatchVersion.v3"
+                )
 
             stats = await self.game_stats.get_player_match_stats(
                 player_options, match_data
@@ -531,21 +534,14 @@ class LanoValoPy:
             logger.error(
                 "Unauthorized error occurred while fetching match data. Please check your API key and try again."
             )
-            return TotalPlayerStatsModel(
-                stats=None,
-                duels=None
-            )
+            return TotalPlayerStatsModel(stats=None, duels=None)
         except ValueError as e:
             logger.error(f"{e}")
-            return TotalPlayerStatsModel(
-                stats=None,
-                duels=None
-            )
+            return TotalPlayerStatsModel(stats=None, duels=None)
 
     async def get_player_day_wins_loses_stats(
         self, options: GetMMRHistoryByPUUIDFetchOptionsModel
     ) -> DayMMRStats:
-        
         if options.puuid is None and options.version:
             pass
 
@@ -553,12 +549,12 @@ class LanoValoPy:
             mmr_history = await self.get_mmr_history_by_puuid(options=options)
             if not isinstance(mmr_history, MMRHistoryModelV2):
                 raise ValueError("Work only with MMRHistoryVersions.v1")
-            
+
             data = await self.game_stats.get_day_win_lose(mmr_history.history)
 
             if not data:
                 raise ValueError("Not found Stats Data")
-            
+
             return data
         except ValueError as e:
             logger.error(f"{e}")

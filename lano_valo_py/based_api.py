@@ -5,27 +5,21 @@ from urllib.parse import urlencode
 from aiohttp import ClientResponse, ClientSession
 from aiohttp.client_exceptions import ClientError, ContentTypeError
 
+from .utils.const import CONTENT_TYPE, USER_AGENT
+from .utils.types import DefaultHeaders
 from .valo_types.valo_models import FetchOptionsModel
 from .valo_types.valo_responses import APIResponseModel, ErrorObject, RateLimit
-
-
-class DefaultHeaders(TypedDict, total=False):
-    Accept: str
-    Content_Type: str
-    Authorization: str
-    User_Agent: str
-    X_Request_ID: str
 
 
 class BasedApi(ABC):
     def __init__(self, default_headers: Optional[DefaultHeaders] = {}):
         if default_headers:
             self.headers: Dict[str, str] = {
-                "Accept": default_headers.get("Accept", "application/json"),
-                "Content-Type": default_headers.get("Content_Type", "application/json"),
+                "Accept": default_headers.get("Accept", CONTENT_TYPE),
+                "Content-Type": default_headers.get("Content_Type", CONTENT_TYPE),
                 "User-Agent": default_headers.get(
                     "User_Agent",
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+                    USER_AGENT,
                 ),
             }
 
