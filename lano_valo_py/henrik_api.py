@@ -272,7 +272,7 @@ class HenrikAPI(BasedApi):
         try:
             return ContentResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_leaderboard(
         self, options: GetLeaderboardOptionsModel
@@ -324,23 +324,25 @@ class HenrikAPI(BasedApi):
                 case _:
                     raise ValueError(f"Invalid version: {encoded_version}")
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_matches(
         self, options: GetMatchesFetchOptionsModel
     ) -> List[MatchResponseModel] | List[MatchDataV4]:
         self._validate(options.model_dump())
-        query = self._query(
-            {"filter": options.filter, "map": options.map, "size": options.size}
-        )
+        query = self._query({
+            **({"mode": options.filter.value} if options.filter else {}),
+            **({"map": options.map.value} if options.map else {}),
+            **({"size": options.size} if options.size is not None else {})
+        })
         encoded_name = quote(options.name)
         encoded_tag = quote(options.tag)
         encoded_region = quote(options.region)
 
         if options.version == MatchListVersion.v3:
-            url = f"{self.BASE_URL}/{options.version}/matches/{encoded_region}/{encoded_name}/{encoded_tag}"
+            url = f"{self.BASE_URL}/{options.version.value}/matches/{encoded_region}/{encoded_name}/{encoded_tag}"
         else:
-            url = f"{self.BASE_URL}/{options.version}/matches/{encoded_region}/pc/{encoded_name}/{encoded_tag}"
+            url = f"{self.BASE_URL}/{options.version.value}/matches/{encoded_region}/pc/{encoded_name}/{encoded_tag}"
 
         if query:
             url += f"?{query}"
@@ -349,7 +351,7 @@ class HenrikAPI(BasedApi):
         result = await self._fetch(fetch_options)
 
         matches = self.henrik_helper.data_convertor(result)
-
+        
         try:
             match options.version:
                 case MatchListVersion.v3:
@@ -357,9 +359,9 @@ class HenrikAPI(BasedApi):
                         MatchResponseModel.model_validate(match) for match in matches
                     ]
                 case MatchListVersion.v4:
-                    return [MatchDataV4.model_validate(**match) for match in matches]
+                    return [MatchDataV4.model_validate(match) for match in matches]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_match(
         self, options: GetMatchFetchOptionsModel
@@ -390,9 +392,11 @@ class HenrikAPI(BasedApi):
                     return MatchDataV4.model_validate(result.data)
                 case _:
                     raise TypeError("Option support v3 or v4")
+                
         except TypeError:
             logger.error(result.data)
             raise UnauthorizedError("Unauthorized", result)
+        
         except ValidationError as e:
             raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 

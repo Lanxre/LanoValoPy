@@ -561,3 +561,23 @@ class LanoValoPy:
             return DayMMRStats(
                 mmr=0, mmr_difference=0, wins=0, losses=0, wins_percentage=0
             )
+
+    async def get_most_played(self, match_options: GetMatchesFetchOptionsModel, most_common: int) -> list[tuple[str, int]]:
+        try:
+            matches = await self.get_matches(match_options)
+            
+            converted_matches = []
+            for match in matches:
+                if isinstance(match, MatchResponseModel):
+                    converted_matches.append(match.to_match_data_v4())
+                elif isinstance(match, MatchDataV4):
+                    converted_matches.append(match)
+
+
+            most_played = await self.game_stats.get_most_player_played(converted_matches, match_options, most_common)
+            return most_played
+            
+
+        except ValueError as e:
+            logger.error(e)
+            return []

@@ -20,18 +20,18 @@ class Damage(BaseModel):
 class Stats(BaseModel):
     score: int
     kills: int
-    deaths: int
-    assists: int
+    deaths: Optional[int] = None
+    assists: Optional[int] = None
     headshots: int
     legshots: int
     bodyshots: int
-    damage: Damage
+    damage: Optional[Damage] = None
 
 class AbilityCasts(BaseModel):
-    grenade: int
-    ability_1: int
-    ability_2: int
-    ultimate: int
+    grenade: Optional[int] = 0
+    ability_1: Optional[int] = 0
+    ability_2: Optional[int] = 0
+    ultimate: Optional[int] = 0
 
 class Tier(BaseModel):
     id: int
@@ -42,13 +42,13 @@ class FriendlyFire(BaseModel):
     outgoing: int
 
 class Behavior(BaseModel):
-    afk_rounds: int
+    afk_rounds: Optional[int | float] = 0
     friendly_fire: FriendlyFire
-    rounds_in_spawn: int
+    rounds_in_spawn: int | float
 
 class EconomySpent(BaseModel):
     overall: int
-    average: int
+    average: Optional[int | float] = 0
 
 class Economy(BaseModel):
     spent: EconomySpent
@@ -69,12 +69,12 @@ class Player(BaseModel):
     stats: Stats
     ability_casts: AbilityCasts
     tier: Tier
-    card_id: str
-    title_id: str
-    prefered_level_border: str
+    card_id: Optional[str] = None
+    title_id: Optional[str] = None
+    prefered_level_border: Optional[str] = None
     account_level: int
     session_playtime_in_ms: int
-    behavior: Behavior
+    behavior: Optional[Behavior] = None
     economy: Economy
 
 class Observer(BaseModel):
@@ -113,13 +113,13 @@ class Team(BaseModel):
     team_id: str
     rounds: Rounds
     won: bool
-    premier_roster: PremierRoster
+    premier_roster: Optional[PremierRoster] = None
 
 class PlayerLocation(BaseModel):
-    puuid: str
-    name: str
-    tag: str
-    team: str
+    puuid: Optional[str] = None
+    name: Optional[str] = None
+    tag: Optional[str] = None
+    team: Optional[str] = None
     view_radians: float
     location: Location
 
@@ -137,19 +137,19 @@ class Defuse(BaseModel):
     player_locations: List[PlayerLocation]
 
 class DamageEvent(BaseModel):
-    puuid: str
-    name: str
-    tag: str
-    team: str
+    puuid: Optional[str] = None
+    name: Optional[str] = None
+    tag: Optional[str] = None
+    team: Optional[str] = None
     bodyshots: int
     headshots: int
     legshots: int
     damage: int
 
 class Weapon(BaseModel):
-    id: str
-    name: str
-    type: str
+    id: Optional[str] = None
+    name: Optional[str] = None
+    type: Optional[str] = None
 
 class Armor(BaseModel):
     id: str
@@ -158,8 +158,8 @@ class Armor(BaseModel):
 class RoundEconomy(BaseModel):
     loadout_value: int
     remaining: int
-    weapon: Weapon
-    armor: Armor
+    weapon: Optional[Weapon] = None
+    armor: Optional[Armor] = None
 
 class RoundStats(BaseModel):
     ability_casts: AbilityCasts
@@ -176,8 +176,8 @@ class Round(BaseModel):
     result: str
     ceremony: str
     winning_team: str
-    plant: Plant
-    defuse: Defuse
+    plant: Optional[Plant] = None
+    defuse: Optional[Defuse] = None
     stats: List[RoundStats]
 
 class Kill(BaseModel):

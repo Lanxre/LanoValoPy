@@ -6,7 +6,7 @@ from lano_valo_py.valo_types.valo_responses import APIResponseModel, BinaryData
 class ResponceHelper:
     def data_convertor(self, result: APIResponseModel) -> List[Dict[str, Any]]:
         if result.data is None:
-            raise ValueError("API response contains no data")
+            raise ValueError(f"API response contains no data: {result}")
 
         if isinstance(result.data, bytes):
             if result.data != b"":

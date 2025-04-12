@@ -296,6 +296,8 @@ class MatchResponseModel(BaseModel):
     rounds: List[MatchRoundModel]
     kills: List[MatchKillsResponseModel]
 
+    def to_match_data_v4(self): ...
+
 
 class PlayerStatsModel(BaseModel):
     kill_diff: int

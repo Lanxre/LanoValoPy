@@ -1,10 +1,14 @@
+from collections import Counter
 from datetime import datetime, timezone
 from typing import List, Optional
+
+from lano_valo_py.valo_types.valo_models.match import GetMatchesFetchOptionsModel
 
 from .valo_types.valo_models import AccountFetchOptionsModelV2
 from .valo_types.valo_responses import (
     DayMMRStats,
     HistoryMMRV2,
+    MatchDataV4,
     MatchKillsResponseModel,
     MatchPlayerModel,
     MatchResponseModel,
@@ -85,7 +89,7 @@ class ValoGameStats:
             day_matches,
             key=lambda obj: datetime.fromisoformat(obj.date.replace("Z", "+00:00")),
         )
-        
+
         mmr_dif = sorted_data[-1].elo - sorted_data[0].elo
         win_count = len(wins_day_matches)
         lose_count = len(loses_day_matches)
@@ -213,3 +217,22 @@ class ValoGameStats:
             ] += 1
 
         return player_duel_stats
+
+    async def get_most_player_played(
+        self,
+        matches: List[MatchDataV4],
+        match_options: GetMatchesFetchOptionsModel,
+        most_common: int,
+    ) -> list[tuple[str, int]]:
+        if most_common > 10 or most_common <= 0:
+            most_common = 10
+
+        most_played = Counter(
+            player.name
+            for match in matches
+            for player in match.players
+            if player.name.lower() != match_options.name.lower()
+            and player.tag.lower() != match_options.tag.lower()
+        )
+
+        return most_played.most_common(most_common)
