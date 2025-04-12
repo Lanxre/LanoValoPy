@@ -3,6 +3,7 @@ from typing import List
 from pydantic import ValidationError
 
 from .utils import ResponceHelper
+from .utils.const import VALIDATE_DATA_MESSAGE_ERROR
 
 from .based_api import BasedApi
 
@@ -56,7 +57,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [PlayerCardModelResponse.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
             
 
     async def get_player_card_by_uuid(
@@ -74,7 +75,7 @@ class GameApi(BasedApi):
         try: 
             return PlayerCardModelResponse.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_player_titles(
         self, options: GetPlayerTitleModel
@@ -101,7 +102,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [PlayerTitleModelResponse.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
         
 
     async def get_player_title_by_uuid(
@@ -132,7 +133,7 @@ class GameApi(BasedApi):
         try:
             return PlayerTitleModelResponse.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_agents(self, options: GetAgentsModel) -> List[AgentResponseModel]:
         query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
@@ -147,7 +148,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [AgentResponseModel.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_agent_by_uuid(self, options: GetAgentsModel) -> AgentResponseModel:
         self._validate(options.model_dump(), ["uuid"])
@@ -162,7 +163,7 @@ class GameApi(BasedApi):
         try:
             return AgentResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_maps(self, options: GetGameMapsModel) -> List[MapModelResponse]:
         query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
@@ -177,7 +178,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [MapModelResponse.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_map_by_uuid(self, options: GetGameMapsModel) -> MapModelResponse:
         self._validate(options.model_dump(), ["uuid"])
@@ -192,7 +193,7 @@ class GameApi(BasedApi):
         try:
             return MapModelResponse.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_weapons(
         self, options: GetGameWeaponsModel
@@ -209,7 +210,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [WeaponResponseModel.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_weapons_by_uuid(
         self, options: GetGameWeaponsModel
@@ -226,7 +227,7 @@ class GameApi(BasedApi):
         try:
             return WeaponResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_weapons_skins(
         self, options: GetGameWeaponsModel
@@ -243,7 +244,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [WeaponSkinGameWeaponResponseModel.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_weapons_skins_by_uuid(
         self, options: GetGameWeaponsModel
@@ -260,7 +261,7 @@ class GameApi(BasedApi):
         try:
             return WeaponSkinGameWeaponResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_weapons_skins_chromas(
         self, options: GetGameWeaponsModel
@@ -277,7 +278,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [ChromaGameWeaponResponseModel.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_weapons_skins_chromas_by_uuid(
         self, options: GetGameWeaponsModel
@@ -294,7 +295,7 @@ class GameApi(BasedApi):
         try:
             return ChromaGameWeaponResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_weapons_skins_levels(
         self, options: GetGameWeaponsModel
@@ -311,7 +312,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [LevelGameWeaponResponseModel(**x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_weapons_skins_levels_by_uuid(
         self, options: GetGameWeaponsModel
@@ -329,7 +330,7 @@ class GameApi(BasedApi):
         try:
             return LevelGameWeaponResponseModel.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_border_levels(
         self, options: GetGameBorderLevelsModel
@@ -346,7 +347,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [BorderLevelModelResponse.model_validate(x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_border_levels_by_uuid(
         self, options: GetGameBorderLevelsModel
@@ -363,7 +364,7 @@ class GameApi(BasedApi):
         try:
             return BorderLevelModelResponse.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_gear(self, options: GetGameGearModel) -> List[GearModelResponse]:
         query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
@@ -378,7 +379,7 @@ class GameApi(BasedApi):
             data = self.res_helper.data_convertor(result)
             return [GearModelResponse(**x) for x in data]
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
 
     async def get_gear_by_uuid(self, options: GetGameGearModel) -> GearModelResponse:
         self._validate(options.model_dump(), ["uuid"])
@@ -393,5 +394,5 @@ class GameApi(BasedApi):
         try:
             return GearModelResponse.model_validate(result.data)
         except ValidationError as e:
-            raise ValueError(f"Invalid response data: {e}") from e
+            raise ValueError(f"{VALIDATE_DATA_MESSAGE_ERROR}: {e}") from e
         
