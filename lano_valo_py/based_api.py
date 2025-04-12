@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
 from aiohttp import ClientResponse, ClientSession
