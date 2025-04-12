@@ -1,6 +1,7 @@
 import os
 import sys
 
+from examples.config import Settings
 from lano_valo_py.valo_types.valo_enums import MMRVersions, Regions
 from lano_valo_py.valo_types.valo_models import (
     GetMMRStoredHistoryFilterModel,
@@ -17,8 +18,11 @@ from lano_valo_py import LanoValoPy
 
 
 async def main():
+    # Get token from .env
+    settings = Settings()
+
     # Initialize the API client with your token
-    api_client = LanoValoPy(henrik_token="YOUR_TOKEN_HERE")
+    api_client = LanoValoPy(henrik_token=settings.henrik_api_token)
 
     # Example: Get Stored MMR History
 
