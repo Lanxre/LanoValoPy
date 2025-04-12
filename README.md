@@ -31,7 +31,7 @@ You can request an API key on [Henrik's discord server](https://discord.com/invi
 
 Some requests may take longer.
 
-### Get Account and mmr informations
+### Get Account
 
 ```python
 import asyncio
@@ -44,19 +44,11 @@ async def main():
 
     # Example: Get Account Information
     account_options = AccountFetchOptionsModel(name="LANORE", tag="evil")
-    account_response = await api_client.get_account(account_options)
-    print(account_response)
-
-    # Example: Get MMR
-    mmr_options = GetMMRFetchOptionsModel(
-        version=MMRVersions.v2,
-        region=Regions.eu,
-        name="Lanore",
-        tag="evil",
-    )
-    mmr_response = await api_client.get_mmr(mmr_options)
-    print(mmr_response)
-
+    try:
+        account_response = await api_client.get_account(account_options)
+        print(account_response)
+    except Exception as e:
+        print(f"Error fetching account: {e}")
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -113,8 +105,25 @@ async def main():
 
 ## Examples
 
-[Fore more examples](./examples/)
+[For more examples](./examples/)
 
+## Supported Endpoints
+- Account info
+- MMR history
+- Match history
+- Stored Data
+- etc...
+
+## Rate Limits
+The unofficial Valorant API has the following limits:
+- Basic key: 30 requests per minute
+- Advanced key: 90 requests per minute
+- Custom key: Limit you requests
+
+### Common Use Cases
+- Track player rank over time
+- Compare teammates' stats
+- Monitor store rotations
 
 ## Download
 
