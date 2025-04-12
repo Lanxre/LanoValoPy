@@ -7,12 +7,14 @@ from lano_valo_py.valo_types.valo_enums import (
     MMRVersions,
     Modes,
     Regions,
+    AccountVersion
 )
 from lano_valo_py.valo_types.valo_models import (
     GetMMRByPUUIDFetchOptionsModel,
     GetStoredMatchesFilterModel,
     GetStoredMatchesOptionsModel,
     GetWebsiteFetchOptionsModel,
+    AccountFetchOptionsModel
 )
 from lano_valo_py.valo_types.valo_responses.v3_mmr import MmrModelV3
 from tests import Settings
@@ -23,6 +25,11 @@ def get_lanovalopy():
     settings = Settings()
     return LanoValoPy(settings.henrik_api_token)
 
+@pytest.mark.asyncio
+async def test_get_account(get_lanovalopy: LanoValoPy):
+    account_options = AccountFetchOptionsModel(name="LANORE", tag="evil",version=AccountVersion.v2)
+    account_response = await get_lanovalopy.get_account(account_options)
+    assert account_response.tag.lower() == "evil"
 
 @pytest.mark.asyncio
 async def test_get_valorant_news(get_lanovalopy: LanoValoPy):

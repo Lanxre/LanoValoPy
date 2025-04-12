@@ -1,6 +1,15 @@
 from typing import List
 
+from pydantic import ValidationError
+
+from .utils import ResponceHelper
+
 from .based_api import BasedApi
+
+from .valo_types.valo_enums import (
+    Locales
+)
+
 from .valo_types.valo_models import (
     FetchOptionsModel,
     GetAgentsModel,
@@ -30,11 +39,12 @@ class GameApi(BasedApi):
 
     def __init__(self):
         self.headers = {"User-Agent": "LanoValoPy"}
+        self.res_helper = ResponceHelper()
 
     async def get_player_cards(
         self, options: GetPlayerCardModel
     ) -> List[PlayerCardModelResponse]:
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/playercards"
 
         if query:
@@ -42,13 +52,18 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [PlayerCardModelResponse(**x) for x in result.data]
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [PlayerCardModelResponse.model_validate(x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
+            
 
     async def get_player_card_by_uuid(
         self, options: GetPlayerCardModel
     ) -> PlayerCardModelResponse:
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/playercards/{options.uuid}"
 
         if query:
@@ -56,7 +71,10 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return PlayerCardModelResponse(**result.data)
+        try: 
+            return PlayerCardModelResponse.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_player_titles(
         self, options: GetPlayerTitleModel
@@ -70,7 +88,7 @@ class GameApi(BasedApi):
         Returns:
             List[PlayerTitleModelResponse]: The player titles.
         """
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/playertitles"
 
         if query:
@@ -78,7 +96,13 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [PlayerTitleModelResponse(**x) for x in result.data]
+        
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [PlayerTitleModelResponse.model_validate(x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
+        
 
     async def get_player_title_by_uuid(
         self, options: GetPlayerTitleModel
@@ -97,7 +121,7 @@ class GameApi(BasedApi):
             ValidationError: If the UUID is not provided in the options.
         """
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/playertitles/{options.uuid}"
 
         if query:
@@ -105,10 +129,13 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return PlayerTitleModelResponse(**result.data)
+        try:
+            return PlayerTitleModelResponse.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_agents(self, options: GetAgentsModel) -> List[AgentResponseModel]:
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/agents"
 
         if query:
@@ -116,11 +143,15 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [AgentResponseModel(**x) for x in result.data]
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [AgentResponseModel.model_validate(x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_agent_by_uuid(self, options: GetAgentsModel) -> AgentResponseModel:
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/agents/{options.uuid}"
 
         if query:
@@ -128,10 +159,13 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return AgentResponseModel(**result.data)
+        try:
+            return AgentResponseModel.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_maps(self, options: GetGameMapsModel) -> List[MapModelResponse]:
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/maps"
 
         if query:
@@ -139,11 +173,15 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [MapModelResponse(**x) for x in result.data]
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [MapModelResponse.model_validate(x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_map_by_uuid(self, options: GetGameMapsModel) -> MapModelResponse:
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/maps/{options.uuid}"
 
         if query:
@@ -151,12 +189,15 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return MapModelResponse(**result.data)
+        try:
+            return MapModelResponse.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_weapons(
         self, options: GetGameWeaponsModel
     ) -> List[WeaponResponseModel]:
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/weapons"
 
         if query:
@@ -164,13 +205,17 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [WeaponResponseModel(**x) for x in result.data]
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [WeaponResponseModel.model_validate(x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_weapons_by_uuid(
         self, options: GetGameWeaponsModel
     ) -> WeaponResponseModel:
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/weapons/{options.uuid}"
 
         if query:
@@ -178,12 +223,15 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return WeaponResponseModel(**result.data)
+        try:
+            return WeaponResponseModel.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_weapons_skins(
         self, options: GetGameWeaponsModel
     ) -> List[WeaponSkinGameWeaponResponseModel]:
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/weapons/skins"
 
         if query:
@@ -191,13 +239,17 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [WeaponSkinGameWeaponResponseModel(**x) for x in result.data]
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [WeaponSkinGameWeaponResponseModel.model_validate(x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_weapons_skins_by_uuid(
         self, options: GetGameWeaponsModel
     ) -> WeaponSkinGameWeaponResponseModel:
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/weapons/skins/{options.uuid}"
 
         if query:
@@ -205,12 +257,15 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return WeaponSkinGameWeaponResponseModel(**result.data)
+        try:
+            return WeaponSkinGameWeaponResponseModel.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_weapons_skins_chromas(
         self, options: GetGameWeaponsModel
     ) -> List[ChromaGameWeaponResponseModel]:
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/weapons/skinchromas"
 
         if query:
@@ -218,13 +273,17 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [ChromaGameWeaponResponseModel(**x) for x in result.data]
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [ChromaGameWeaponResponseModel.model_validate(x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_weapons_skins_chromas_by_uuid(
         self, options: GetGameWeaponsModel
     ) -> ChromaGameWeaponResponseModel:
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/weapons/skinchromas/{options.uuid}"
 
         if query:
@@ -232,12 +291,15 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return ChromaGameWeaponResponseModel(**result.data)
+        try:
+            return ChromaGameWeaponResponseModel.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_weapons_skins_levels(
         self, options: GetGameWeaponsModel
     ) -> List[LevelGameWeaponResponseModel]:
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/weapons/skinlevels"
 
         if query:
@@ -245,13 +307,17 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [LevelGameWeaponResponseModel(**x) for x in result.data]
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [LevelGameWeaponResponseModel(**x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_weapons_skins_levels_by_uuid(
         self, options: GetGameWeaponsModel
     ) -> LevelGameWeaponResponseModel:
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/weapons/skinlevels/{options.uuid}"
 
         if query:
@@ -259,12 +325,16 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return LevelGameWeaponResponseModel(**result.data)
+
+        try:
+            return LevelGameWeaponResponseModel.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_border_levels(
         self, options: GetGameBorderLevelsModel
     ) -> List[BorderLevelModelResponse]:
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/levelborders"
 
         if query:
@@ -272,13 +342,17 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [BorderLevelModelResponse(**x) for x in result.data]
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [BorderLevelModelResponse.model_validate(x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_border_levels_by_uuid(
         self, options: GetGameBorderLevelsModel
     ) -> BorderLevelModelResponse:
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/levelborders/{options.uuid}"
 
         if query:
@@ -286,10 +360,13 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return BorderLevelModelResponse(**result.data)
+        try:
+            return BorderLevelModelResponse.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_gear(self, options: GetGameGearModel) -> List[GearModelResponse]:
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/gear"
 
         if query:
@@ -297,11 +374,15 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return [GearModelResponse(**x) for x in result.data]
+        try:
+            data = self.res_helper.data_convertor(result)
+            return [GearModelResponse(**x) for x in data]
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
 
     async def get_gear_by_uuid(self, options: GetGameGearModel) -> GearModelResponse:
         self._validate(options.model_dump(), ["uuid"])
-        query = self._query({"language": options.language.value})
+        query = self._query({"language": options.language.value if options.language else Locales.en_US.value})
         url = f"{self.BASE_URL}/v1/gear/{options.uuid}"
 
         if query:
@@ -309,4 +390,8 @@ class GameApi(BasedApi):
 
         fetch_options = FetchOptionsModel(url=url)
         result = await self._fetch(fetch_options)
-        return GearModelResponse(**result.data)
+        try:
+            return GearModelResponse.model_validate(result.data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid response data: {e}") from e
+        

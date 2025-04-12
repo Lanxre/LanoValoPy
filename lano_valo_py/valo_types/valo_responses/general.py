@@ -17,7 +17,7 @@ class ErrorObject(BaseModel):
 
 class APIResponseModel(BaseModel):
     status: int
-    data: Optional[Dict[str, Any]] | Optional[List[Dict[str, Any]]] = None
+    data: Optional[Dict[str, Any]] | Optional[List[Dict[str, Any]]] | bytes = None
     ratelimits: Optional[RateLimit] = None
     error: Optional[ErrorObject] = None
     url: Optional[str] = None

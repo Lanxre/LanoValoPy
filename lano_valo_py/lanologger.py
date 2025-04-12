@@ -1,6 +1,12 @@
 import logging
-from typing import Callable, Self
+from typing import Callable, Dict, List, Self, TypedDict
 
+class ColorCodes(TypedDict):
+    time: str
+    name: str
+    level: Dict[int, str]
+    message: str
+    reset: str
 
 class LanoFormatter(logging.Formatter):
     """
@@ -8,7 +14,7 @@ class LanoFormatter(logging.Formatter):
     a specific date format, and customized spacing.
     """
 
-    COLOR_CODES = {
+    COLOR_CODES: ColorCodes = {
         "time": "\033[37m",  # White for timestamp
         "name": "\033[94m",  # Blue for logger name
         "level": {
@@ -22,21 +28,21 @@ class LanoFormatter(logging.Formatter):
         "reset": "\033[0m",  # Reset color
     }
 
-    def __init__(self):
-        log_format = "[%(asctime)s]  - (%(name)-s) - [%(levelname)-s] - %(message)s"
+    def __init__(self, log_format: str = "", date_format: str = ""):
+        if not log_format:
+            log_format = "[%(asctime)s]  - (%(name)-s) - [%(levelname)-s] - %(message)s"
 
-        date_format = "%d/%m/%Y %H:%M:%S"
+        if not date_format:
+            date_format = "%d/%m/%Y %H:%M:%S"
 
-        super().__init__(log_format, datefmt=date_format)
+        super().__init__(fmt=log_format, datefmt=date_format)
 
     def format(self, record: logging.LogRecord) -> str:
-        time_color = self.COLOR_CODES.get("name")
-        name_color = self.COLOR_CODES.get("name")
-        level_color = self.COLOR_CODES.get("level").get(
-            record.levelno, self.COLOR_CODES.get("reset")
-        )
-        message_color = self.COLOR_CODES.get("message")
-        reset_color = self.COLOR_CODES.get("reset")
+        time_color = self.COLOR_CODES["name"]
+        name_color = self.COLOR_CODES["name"]
+        level_color = self.COLOR_CODES["level"].get(record.levelno, "")
+        message_color = self.COLOR_CODES["message"]
+        reset_color = self.COLOR_CODES["reset"]
 
         record.asctime = (
             f"{time_color}{self.formatTime(record, self.datefmt)}{reset_color}"
@@ -56,7 +62,7 @@ class LoggerBuilder:
         self._name = name
         self._level = logging.INFO
         self._formatter = LanoFormatter()
-        self._handlers = []
+        self._handlers: List[logging.Handler] = []
 
     def set_level(self, level: int) -> Self:
         """
@@ -81,7 +87,7 @@ class LoggerBuilder:
         Returns:
             LoggerBuilder: The builder instance for method chaining.
         """
-        self._formatter = logging.Formatter(format_str)
+        self._formatter = LanoFormatter(format_str)
         return self
 
     def add_stream_handler(self) -> Self:

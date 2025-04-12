@@ -326,7 +326,7 @@ class LanoValoPy:
         Returns:
             List[EsportsMatchResponseModel]: The current esports matches.
         """
-        return self.henrik_api.get_esports_matches(options)
+        return await self.henrik_api.get_esports_matches(options)
 
     async def get_premier_team(
         self, options: GetPremierTeamFetchOptionsModel
@@ -519,6 +519,10 @@ class LanoValoPy:
     ) -> TotalPlayerStatsModel:
         try:
             match_data = await self.get_match(match_options)
+
+            if not isinstance(match_data, MatchResponseModel):
+                raise ValueError("get_player_match_stats - now work only with MatchVersion.v3")
+
             stats = await self.game_stats.get_player_match_stats(
                 player_options, match_data
             )
@@ -526,6 +530,16 @@ class LanoValoPy:
         except UnauthorizedError:
             logger.error(
                 "Unauthorized error occurred while fetching match data. Please check your API key and try again."
+            )
+            return TotalPlayerStatsModel(
+                stats=None,
+                duels=None
+            )
+        except ValueError as e:
+            logger.error(f"{e}")
+            return TotalPlayerStatsModel(
+                stats=None,
+                duels=None
             )
 
     async def get_player_day_wins_loses_stats(
@@ -535,6 +549,19 @@ class LanoValoPy:
         if options.puuid is None and options.version:
             pass
 
-        mmr_history: MMRHistoryModelV2 = await self.get_mmr_history_by_puuid(options=options)
-        data = await self.game_stats.get_day_win_lose(mmr_history.history)
-        return data
+        try:
+            mmr_history = await self.get_mmr_history_by_puuid(options=options)
+            if not isinstance(mmr_history, MMRHistoryModelV2):
+                raise ValueError("Work only with MMRHistoryVersions.v1")
+            
+            data = await self.game_stats.get_day_win_lose(mmr_history.history)
+
+            if not data:
+                raise ValueError("Not found Stats Data")
+            
+            return data
+        except ValueError as e:
+            logger.error(f"{e}")
+            return DayMMRStats(
+                mmr=0, mmr_difference=0, wins=0, losses=0, wins_percentage=0
+            )

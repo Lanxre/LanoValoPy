@@ -14,7 +14,7 @@ class Modes(str, Enum):
     teamdeathmatch = "teamdeathmatch"
     swiftplay = "swiftplay"
 
-class Maps(str, Enum):
+class Maps(Enum):
     ascent = "ascent"
     split = "split"
     fracture = "fracture"
@@ -27,6 +27,9 @@ class Maps(str, Enum):
     pearl = "pearl"
     icebox = "icebox"
     haven = "haven"
+
+    def __str__(self):
+        return self.value
 
 
 class RawTypes(str, Enum):

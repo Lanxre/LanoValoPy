@@ -21,7 +21,7 @@ class ValoGameStats:
         match: MatchResponseModel,
     ) -> TotalPlayerStatsModel:
         if not player_options.puuid and not (player_options.name or player_options.tag):
-            return
+            return TotalPlayerStatsModel(stats=None, duels=None)
 
         if player_options.puuid:
             player = self.find_player_by_puuid(match, player_options.puuid)
@@ -31,7 +31,7 @@ class ValoGameStats:
             )
 
         if not player:
-            return
+            return TotalPlayerStatsModel(stats=None, duels=None)
 
         total_rounds = match.metadata.rounds_played
 
@@ -45,7 +45,7 @@ class ValoGameStats:
         self, mmr_data: List[HistoryMMRV2]
     ) -> Optional[DayMMRStats]:
         if not mmr_data:
-            return
+            return None
 
         today = datetime.now(timezone.utc).date()
         day_matches = list(
@@ -59,7 +59,7 @@ class ValoGameStats:
         )
 
         if not day_matches:
-            return
+            return None
 
         loses_day_matches = list(
             filter(
@@ -194,7 +194,7 @@ class ValoGameStats:
     async def calculate_duels(
         self, kills: List[MatchKillsResponseModel]
     ) -> dict[str, dict[str, int]]:
-        player_duel_stats = {}
+        player_duel_stats: dict[str, dict[str, int]] = {}
 
         for round_kill in kills:
             if round_kill.killer_display_name not in player_duel_stats:

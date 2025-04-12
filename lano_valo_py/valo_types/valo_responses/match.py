@@ -310,5 +310,5 @@ class PlayerStatsModel(BaseModel):
 
 
 class TotalPlayerStatsModel(BaseModel):
-    stats: PlayerStatsModel
-    duels: dict[str, int]
+    stats: PlayerStatsModel | None = None
+    duels: dict[str, int] | None = None

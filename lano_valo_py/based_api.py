@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 from urllib.parse import urlencode
 
 from aiohttp import ClientResponse, ClientSession
@@ -9,7 +9,25 @@ from .valo_types.valo_models import FetchOptionsModel
 from .valo_types.valo_responses import APIResponseModel, ErrorObject, RateLimit
 
 
+class DefaultHeaders(TypedDict, total=False):
+    Accept: str
+    Content_Type: str
+    Authorization: str
+    User_Agent: str
+    X_Request_ID: str
+
+
 class BasedApi(ABC):
+    def __init__(self, default_headers: Optional[DefaultHeaders] = {}):
+        if default_headers:
+            self.headers: Dict[str, str] = {
+                "Accept": default_headers.get("Accept", "application/json"),
+                "Content-Type": default_headers.get("Content_Type", "application/json"),
+                "User-Agent": default_headers.get(
+                    "User_Agent",
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+                ),
+            }
 
     async def _parse_body(self, body: Any) -> Any:
         """Parses the body of a response from the API.
@@ -84,7 +102,7 @@ class BasedApi(ABC):
         )
         return api_response
 
-    def _validate(self, input_data: Dict[str, Any], required_fields: List[str] = None):
+    def _validate(self, input_data: Dict[str, Any], required_fields: List[str] = []):
         """
         Validates the input data for required fields.
 
@@ -148,7 +166,10 @@ class BasedApi(ABC):
                 ) as response:
                     if fetch_options.rtype == "arraybuffer":
                         data = await response.read()
-                        return data
+                        return APIResponseModel(
+                            status=201,
+                            data=data,
+                        )
 
                     return await self._parse_response(response, url)
         except ClientError as e:

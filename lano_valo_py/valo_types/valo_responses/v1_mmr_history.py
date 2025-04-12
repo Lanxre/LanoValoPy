@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-class ImagesModel(BaseModel):
+class ImagesModelResponce(BaseModel):
     small: str
     large: str
     triangle_down: str
@@ -18,7 +18,7 @@ class MapModel(BaseModel):
 class MatchDataModel(BaseModel):
     currenttier: int
     currenttier_patched: str
-    images: ImagesModel
+    images: ImagesModelResponce
     match_id: str
     map: MapModel
     season_id: str
