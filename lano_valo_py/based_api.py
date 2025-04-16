@@ -13,15 +13,14 @@ from .valo_types.valo_responses import APIResponseModel, ErrorObject, RateLimit
 
 class BasedApi(ABC):
     def __init__(self, default_headers: Optional[DefaultHeaders] = {}):
-        if default_headers:
-            self.headers: Dict[str, str] = {
-                "Accept": default_headers.get("Accept", CONTENT_TYPE),
-                "Content-Type": default_headers.get("Content_Type", CONTENT_TYPE),
-                "User-Agent": default_headers.get(
-                    "User_Agent",
-                    USER_AGENT,
-                ),
-            }
+        self.headers: Dict[str, str] = {
+            "Accept": default_headers.get("Accept", CONTENT_TYPE),
+            "Content-Type": default_headers.get("Content_Type", CONTENT_TYPE),
+            "User-Agent": default_headers.get(
+                "User_Agent",
+                USER_AGENT,
+            ),
+        }
 
     async def _parse_body(self, body: Any) -> Any:
         """Parses the body of a response from the API.

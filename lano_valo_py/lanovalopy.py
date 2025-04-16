@@ -4,6 +4,7 @@ from .exeptions import UnauthorizedError
 from .game_api import GameApi
 from .game_stats import ValoGameStats
 from .henrik_api import HenrikAPI
+from .valo_tracker import TrackerApi
 from .lanologger import LoggerBuilder
 from .utils.const import TOKEN_MESSAGE_REQUERIED
 from .valo_types.valo_models import (
@@ -89,10 +90,12 @@ class LanoValoPy:
         henrik_api: Optional[HenrikAPI] = None,
         game_api: Optional[GameApi] = None,
         game_stats: Optional[ValoGameStats] = None,
+        tracker_api: Optional[TrackerApi] = None,
     ):
         self.henrik_api = henrik_api or HenrikAPI(henrik_token)
         self.game_api = game_api or GameApi()
         self.game_stats = game_stats or ValoGameStats()
+        self.tracker_api = tracker_api or TrackerApi()
 
         if henrik_token is None:
             logger.info(TOKEN_MESSAGE_REQUERIED)
@@ -104,6 +107,10 @@ class LanoValoPy:
     @property
     def get_game_api(self) -> GameApi:
         return self.game_api
+
+    @property
+    def get_tracker_api(self) -> TrackerApi:
+        return self.tracker_api
 
     async def get_account(
         self, options: AccountFetchOptionsModel
@@ -562,10 +569,12 @@ class LanoValoPy:
                 mmr=0, mmr_difference=0, wins=0, losses=0, wins_percentage=0
             )
 
-    async def get_most_played(self, match_options: GetMatchesFetchOptionsModel, most_common: int) -> list[tuple[str, int]]:
+    async def get_most_played(
+        self, match_options: GetMatchesFetchOptionsModel, most_common: int
+    ) -> list[tuple[str, int]]:
         try:
             matches = await self.get_matches(match_options)
-            
+
             converted_matches = []
             for match in matches:
                 if isinstance(match, MatchResponseModel):
@@ -573,10 +582,10 @@ class LanoValoPy:
                 elif isinstance(match, MatchDataV4):
                     converted_matches.append(match)
 
-
-            most_played = await self.game_stats.get_most_player_played(converted_matches, match_options, most_common)
+            most_played = await self.game_stats.get_most_player_played(
+                converted_matches, match_options, most_common
+            )
             return most_played
-            
 
         except ValueError as e:
             logger.error(e)
