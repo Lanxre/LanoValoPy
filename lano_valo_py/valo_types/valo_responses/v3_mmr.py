@@ -38,6 +38,7 @@ class SeasonalMmrModelV3(BaseModel):
     wins: int
     games: int
     end_tier: Optional[TierMmrModelV3]
+    end_rr: int
     ranking_schema: str
     leaderboard_placement: Optional[LeaderboardPlacement]
     act_wins: List[TierMmrModelV3]
