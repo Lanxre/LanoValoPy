@@ -1,4 +1,5 @@
 from typing import List
+
 from pydantic import BaseModel
 
 
@@ -28,6 +29,8 @@ class HistoryMMRV2(BaseModel):
     rr: int
     last_change: int
     elo: int
+    refunded_rr: int
+    was_derank_protected: bool
     date: str
     map: MapMMRHistoryModelV2
     tier: TierMMRHistoryModelV2
