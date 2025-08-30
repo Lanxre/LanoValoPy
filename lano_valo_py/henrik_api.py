@@ -785,10 +785,12 @@ class HenrikAPI(BasedApi):
 
         query = self._query(
             {
-                "page": (f.page if (f := options.filter) else ""),
-                "size": (f.size if (f := options.filter) else ""),
-                "mode": options.mode.value if options.mode else "",
-                "map": options.map.value if options.map else "",
+                k: v for k, v in {
+                    "page": options.filter.page if options.filter else None,
+                    "size": options.filter.size if options.filter else None,
+                    "mode": options.mode.value if options.mode else None,
+                    "map": options.map.value if options.map else None,
+                }.items() if v is not None
             }
         )
 
@@ -815,10 +817,12 @@ class HenrikAPI(BasedApi):
 
         query = self._query(
             {
-                "page": (f.page if (f := options.filter) else ""),
-                "size": (f.size if (f := options.filter) else ""),
-                "mode": options.mode.value if options.mode else "",
-                "map": options.map.value if options.map else "",
+                k: v for k, v in {
+                    "page": options.filter.page if options.filter else None,
+                    "size": options.filter.size if options.filter else None,
+                    "mode": options.mode.value if options.mode else None,
+                    "map": options.map.value if options.map else None,
+                }.items() if v is not None
             }
         )
 
