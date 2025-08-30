@@ -67,10 +67,12 @@ from .valo_types.valo_responses import (
     MMRHistoryModelV2,
     MmrModelV3,
     MMRResponseModel,
+    MostPlayedHeroesStats,
     PlayerCardModelResponse,
     PlayerTitleModelResponse,
     PremierLeagueMatchesWrapperResponseModel,
     PremierTeamResponseModel,
+    ShortPlayerStats,
     StatusDataResponseModel,
     StoredMatchResponseModel,
     TotalPlayerStatsModel,
@@ -562,10 +564,12 @@ class LanoValoPy:
                 mmr=0, mmr_difference=0, wins=0, losses=0, wins_percentage=0
             )
 
-    async def get_most_played(self, match_options: GetMatchesFetchOptionsModel, most_common: int) -> list[tuple[str, int]]:
+    async def get_most_played(
+        self, match_options: GetMatchesFetchOptionsModel, most_common: int
+    ) -> list[tuple[str, int]]:
         try:
             matches = await self.get_matches(match_options)
-            
+
             converted_matches = []
             for match in matches:
                 if isinstance(match, MatchResponseModel):
@@ -573,11 +577,35 @@ class LanoValoPy:
                 elif isinstance(match, MatchDataV4):
                     converted_matches.append(match)
 
-
-            most_played = await self.game_stats.get_most_player_played(converted_matches, match_options, most_common)
+            most_played = await self.game_stats.get_most_player_played(
+                converted_matches, match_options, most_common
+            )
             return most_played
-            
 
         except ValueError as e:
             logger.error(e)
             return []
+
+    async def get_short_player_stats(
+        self, stored_matches_options: GetStoredMatchesOptionsModel
+    ) -> ShortPlayerStats:
+        try:
+            stored_matches_data = await self.get_stored_matches(stored_matches_options)
+            short_player_stats = await self.game_stats.get_short_player_stats(
+                stored_matches_data
+            )
+            return short_player_stats
+        except ValueError as e:
+            logger.error(f"{e}")
+
+    async def get_most_played_heroes(
+        self, stored_matches_options: GetStoredMatchesOptionsModel
+    ) -> List[MostPlayedHeroesStats]:
+        try:
+            stored_matches_data = await self.get_stored_matches(stored_matches_options)
+            most_played_heroes = await self.game_stats.get_most_played_heroes(
+                stored_matches_data
+            )
+            return most_played_heroes
+        except ValueError as e:
+            logger.error(f"{e}")

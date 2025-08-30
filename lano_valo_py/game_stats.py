@@ -14,7 +14,10 @@ from .valo_types.valo_responses import (
     MatchResponseModel,
     MatchRoundModel,
     PlayerStatsModel,
+    ShortPlayerStats,
+    StoredMatchResponseModel,
     TotalPlayerStatsModel,
+    MostPlayedHeroesStats,
 )
 
 
@@ -236,3 +239,73 @@ class ValoGameStats:
         )
 
         return most_played.most_common(most_common)
+
+    async def get_short_player_stats(
+        self, matches: List[StoredMatchResponseModel]
+    ) -> ShortPlayerStats:
+        total_matches = len(matches)
+        total_ties = sum(1 for match in matches if match.teams.red == match.teams.blue)
+
+        total_wins = sum(
+            1
+            for match in matches
+            if match.teams.red != match.teams.blue
+            and match.stats.team
+            == ("Red" if match.teams.red > match.teams.blue else "Blue")
+        )
+
+        total_losses = total_matches - total_wins - total_ties
+        total_kills = sum(match.stats.kills for match in matches)
+        total_deaths = sum(match.stats.deaths for match in matches)
+        avg_kd = (
+            round(total_kills / total_deaths, 2) if total_deaths > 0 else total_kills
+        )
+        winrate = (
+            round((total_wins / total_matches) * 100, 2) if total_matches > 0 else 0
+        )
+
+        total_damage_dealt = sum(match.stats.damage.made for match in matches)
+        total_rounds = sum((match.teams.red + match.teams.blue) for match in matches)
+
+        adr_dealt = (
+            round(total_damage_dealt / total_rounds, 2) if total_rounds > 0 else 0.0
+        )
+
+        most_pick_hero = Counter(
+            [match.stats.character.name for match in matches]
+        ).most_common()[0][0]
+
+        return ShortPlayerStats(
+            winrate=winrate,
+            total_wins=total_wins,
+            total_losses=total_losses,
+            kd=avg_kd,
+            adr=adr_dealt,
+            most_picked_hero=most_pick_hero,
+        )
+
+    async def get_most_played_heroes(
+        self, matches: List[StoredMatchResponseModel]
+    ) -> List[MostPlayedHeroesStats]:
+        most_played_heroes = Counter(
+            [match.stats.character.id for match in matches]
+        ).most_common(3)
+
+        result = []
+        for hero_id, _ in most_played_heroes:
+            hero_matches = list(
+                filter(lambda match: match.stats.character.id == hero_id, matches)
+            )
+            hero_matches_stats = await self.get_short_player_stats(hero_matches)
+            result.append(
+                MostPlayedHeroesStats(
+                    hero_name=hero_matches_stats.most_picked_hero,
+                    hero_id=hero_id,
+                    kd=hero_matches_stats.kd,
+                    total_losses=hero_matches_stats.total_losses,
+                    total_wins=hero_matches_stats.total_wins,
+                    winrate=hero_matches_stats.winrate,
+                )
+            )
+
+        return result
