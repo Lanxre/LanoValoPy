@@ -7,7 +7,7 @@ from ..valo_enums import Regions, Maps, Modes
 
 class GetStoredMatchesFilterModel(BaseModel):
     page: Optional[int] = Field(1, ge=1)
-    size: Optional[int] = Field(None, ge=1, le=25)
+    size: Optional[int] = Field(20, ge=1, le=100)
 
 
 class GetStoredMatchesOptionsModel(BaseModel):
@@ -16,7 +16,9 @@ class GetStoredMatchesOptionsModel(BaseModel):
     tag: str
     mode: Optional[Modes] = None
     map: Optional[Maps] = None
-    filter: Optional[GetStoredMatchesFilterModel] = None
+    filter: GetStoredMatchesFilterModel = Field(
+        default_factory=lambda: GetStoredMatchesFilterModel()
+    )
 
 
 class GetStoredMatchesByPUUIDResponseModel(BaseModel):
@@ -24,4 +26,6 @@ class GetStoredMatchesByPUUIDResponseModel(BaseModel):
     region: Regions
     mode: Optional[Modes] = None
     map: Optional[Maps] = None
-    filter: Optional[GetStoredMatchesFilterModel] = None
+    filter: GetStoredMatchesFilterModel = Field(
+        default_factory=lambda: GetStoredMatchesFilterModel()
+    )
