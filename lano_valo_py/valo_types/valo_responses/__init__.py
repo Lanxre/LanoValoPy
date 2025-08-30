@@ -26,7 +26,7 @@ from .v1_stored_matches import * # noqa
 from .v3_mmr import MmrModelV3
 from .v2_mmr_history import MMRHistoryModelV2, HistoryMMRV2
 from .v4_matches import MatchDataV4
-from .stats import DayMMRStats
+from .stats import DayMMRStats, ShortPlayerStats, MostPlayedHeroesStats
 
 
 __all__ = [
@@ -34,5 +34,7 @@ __all__ = [
     "MMRHistoryModelV2",
     "HistoryMMRV2",
     "MatchDataV4",
-    "DayMMRStats"
+    "DayMMRStats",
+    "ShortPlayerStats",
+    "MostPlayedHeroesStats"
 ]
