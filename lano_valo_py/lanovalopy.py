@@ -91,12 +91,13 @@ class LanoValoPy:
         henrik_api: Optional[HenrikAPI] = None,
         game_api: Optional[GameApi] = None,
         game_stats: Optional[ValoGameStats] = None,
+        env_path: Optional[str] = None,
     ):
-        self.henrik_api = henrik_api or HenrikAPI(henrik_token)
+        self.henrik_api = henrik_api or HenrikAPI(henrik_token, env_path=env_path)
         self.game_api = game_api or GameApi()
         self.game_stats = game_stats or ValoGameStats()
 
-        if henrik_token is None:
+        if self.henrik_api.token is None:
             logger.info(TOKEN_MESSAGE_REQUERIED)
 
     @property

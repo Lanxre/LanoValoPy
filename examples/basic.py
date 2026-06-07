@@ -13,8 +13,9 @@ from lano_valo_py import LanoValoPy
 
 async def main():
     # Initialize the API client with your token
-    api_client = LanoValoPy(henrik_token="YOUR_TOKEN_HERE")
-
+    # api_client = LanoValoPy(henrik_token="YOUR_TOKEN_HERE") or if you have a .env file, api_client = LanoValoPy(env_path=".env")
+    api_client = LanoValoPy(env_path=".env")
+    
     # Example: Get Account Information
     account_options = AccountFetchOptionsModel(name="LANORE", tag="evil",version=AccountVersion.v2)
     account_response = await api_client.get_account(account_options)

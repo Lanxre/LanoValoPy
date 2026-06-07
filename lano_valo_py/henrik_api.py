@@ -1,5 +1,7 @@
+import ctypes
 from typing import List, Optional
 from urllib.parse import quote
+from pathlib import Path
 
 from pydantic import ValidationError
 
@@ -78,19 +80,56 @@ logger = LoggerBuilder("LanoValoPy").add_stream_handler().build()
 class HenrikAPI(BasedApi):
     BASE_URL = "https://api.henrikdev.xyz/valorant"
 
-    def __init__(self, token: Optional[str] = None):
+    def __init__(self, token: Optional[str] = None, env_path: Optional[str] = None):
         """Initialize the client.
 
         Args:
             token (str, optional): The token to use for requests. Defaults to None.
+            env_path (str, optional): The path to the .env file. Defaults to None.
         """
-        self.token = token
+
+        if token is None:
+            self.__load_token_env(env_path)
+        else:
+            self._token = token
+        
         self.headers = {"User-Agent": "unofficial-valorant-api/python/1.0"}
-        if self.token:
-            self.headers["Authorization"] = self.token
+        self.headers["Authorization"] = self._token
 
         self.henrik_helper = ResponceHelper()
 
+    @property
+    def token(self) -> str:
+        return self._token
+    
+    def __load_token_env(self, env_path: Optional[str] = None):
+        dotenv_lib = ctypes.CDLL("./lano_valo_py/dotenv/dotenv.so")
+        
+        dotenv_lib.config_load.argtypes = [ctypes.c_char_p]
+        dotenv_lib.config_load.restype = ctypes.c_void_p
+        
+        dotenv_lib.config_get.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_char_p,
+        ]
+        dotenv_lib.config_get.restype = ctypes.c_char_p
+        
+        dotenv_lib.config_free.argtypes = [
+            ctypes.c_void_p,
+        ]
+        dotenv_lib.config_free.restype = None
+        
+        if env_path is None or not Path(env_path).exists():
+            logger.warning(f"No .env file found at {env_path}")
+            return
+
+        config = dotenv_lib.config_load(str(Path(__file__).parent.parent / env_path).encode())
+
+        self._token = dotenv_lib.config_get(config, b"TOKEN").decode("utf-8")
+        dotenv_lib.config_free(config)
+        
+        logger.info(f"Token was loaded from .env: {self._token}")
+        
     async def get_account(
         self, options: AccountFetchOptionsModel
     ) -> AccountResponseModelV1 | AccountResponseModelV2:
