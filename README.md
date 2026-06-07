@@ -1,5 +1,3 @@
-[discord]: https://discord.gg/wF9JHH55Kp
-
 <div align="center">
 
 [![Downloads](https://static.pepy.tech/badge/lanovalopy)](https://pepy.tech/project/lanovalopy)
@@ -8,28 +6,26 @@
 
 # LanoValoPy (Lanore Valorant Python)
 
-LanoValoPy is a python-based wrapper for the following Valorant Rest API:
+LanoValoPy is a python-based wrapper for the following Valorant Rest API
 
-https://github.com/Henrik-3/unofficial-valorant-api
+[ORIGINAL API](https://github.com/Henrik-3/unofficial-valorant-api)
 
-This API is free and freely accessible for everyone. An API key is optional but not mandatory. This project is NOT being worked on regularly.
+### API KEY
 
-This is the first version. There could be some bugs, unexpected exceptions or similar. Please report bugs on our [discord].
+You can get API KEY on [Henrik's discord server](https://discord.com/invite/X3GaVkX2YN) or [Henrik's dashboard](https://api.henrikdev.xyz/dashboard/)
 
-### API key
+[OPENAPI SPEC](https://api.henrikdev.xyz/docs)
+[DOCS](https://status.henrikdev.xyz)
 
-You can request an API key on [Henrik's discord server](https://discord.com/invite/X3GaVkX2YN) <br> It is NOT required to use an API key though!
+## Download
 
-## Summary
+``` bash
+pip install lanovalopy@latest
+```
 
-1. [Introduction](#introduction)
-2. [Download](#download)
-3. [Documentation](#documentation)
-4. [Support](#support)
+## EXAMPLES
 
-## Introduction
-
-Some requests may take longer.
+[For more examples](./examples/)
 
 ### Get Account
 
@@ -103,10 +99,6 @@ async def main():
 
 ```
 
-## Examples
-
-[For more examples](./examples/)
-
 ## Supported Endpoints
 - Account info
 - MMR history
@@ -124,20 +116,3 @@ The unofficial Valorant API has the following limits:
 - Track player rank over time
 - Compare teammates' stats
 - Monitor store rotations
-
-## Download
-
-``` bash
-pip install lanovalopy@latest
-
-```
-
-## Documentation
-
-# Hosted
-
-The documentation is hosted here: https://Lanxre.github.io/LanoValoPy/
-
-## Support
-
-For support visit my [discord] server
